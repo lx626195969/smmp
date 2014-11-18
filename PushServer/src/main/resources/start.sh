@@ -1,0 +1,1 @@
+java -Xms128M -Xmx128M -cp . -Dfile.encoding=UTF-8 -Djava.ext.dirs=./lib com.ddk.smmp.pushserver.PushServer &
