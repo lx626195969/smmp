@@ -112,7 +112,7 @@ public class SubmitThread extends Thread{
 			List<SmQueue> tempList = new LinkedList<SmQueue>();
 			
 			try {
-				if( null != channel.getSession() && channel.getSession().isConnected() && null != channel.getSession().getAttribute("isSend")){
+				if(null != channel.getSession() && channel.getSession().isConnected() && null != channel.getSession().getAttribute("isSend")){
 					//每晚23:58分暂停操作
 					if(ConstantUtils.isPause_23_58()){
 						Thread.sleep(10 * 60 * 1000);

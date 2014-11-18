@@ -3,12 +3,15 @@ package com.ddk.smmp.channel.smgp.handler;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.ChannelCacheUtil;
 import com.ddk.smmp.channel.smgp.msg.SubmitResp;
 import com.ddk.smmp.dao.SubmitRspVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
-import com.ddk.smmp.service.DbService;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
+import com.ddk.smmp.thread.SmsCache;
 
 
 /**
@@ -16,6 +19,8 @@ import com.ddk.smmp.service.DbService;
  * 
  */
 public class SubmitResponseChildThread extends Thread {
+	private static final Logger logger = Logger.getLogger(SubmitResponseChildThread.class);
+	
 	List<SubmitResp> tempList = null;
 	Channel channel = null;
 	public SubmitResponseChildThread(List<SubmitResp> tempList, Channel channel) {
@@ -33,20 +38,13 @@ public class SubmitResponseChildThread extends Thread {
 			Integer rid = ChannelCacheUtil.get(Integer.class, "channel_" + channel.getId() + "_seq_cache", resp.getSequenceNumber());
 			if(null != rid){
 				submitRspVos.add(new SubmitRspVo(resp.getSequenceNumber(), rid, Long.parseLong(resp.getMsgId()), channel.getId(), getState(resp.getResult())));
+			}else{
+				ChannelLog.log(logger, "未找到序列:" + resp.getSequenceNumber(), LevelUtils.getErrLevel(channel.getId()));
 			}
 		}
 		
 		if(submitRspVos.size() > 0){
-			//保存响应消息到数据库
-			DatabaseTransaction trans = new DatabaseTransaction(true);
-			try {
-				new DbService(trans).batchAddSubmitRsp(submitRspVos);
-				trans.commit();
-			} catch (Exception ex) {
-				trans.rollback();
-			} finally {
-				trans.close();
-			}
+			SmsCache.queue2.addAll(submitRspVos);
 		}
 	}
 	

@@ -6,13 +6,18 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.smgp.exception.NotEnoughDataInByteBufferException;
 import com.ddk.smmp.channel.smgp.helper.ByteBuffer;
 import com.ddk.smmp.channel.smgp.msg.Deliver;
 import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.service.DbService;
+import com.ddk.smmp.thread.SmsCache;
 
 
 /**
@@ -20,6 +25,8 @@ import com.ddk.smmp.service.DbService;
  * 
  */
 public class DeliverChildThread extends Thread {
+	private static final Logger logger = Logger.getLogger(DeliverChildThread.class);
+	
 	List<Deliver> tempList = null;
 	Channel channel = null;
 	
@@ -50,9 +57,9 @@ public class DeliverChildThread extends Thread {
 					//添加报告到待处理集合
 					delivVos.add(new DelivVo(Long.parseLong(msgId), channel.getId(), state, time));
 				} catch (NotEnoughDataInByteBufferException e) {
-					e.printStackTrace();
+					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
 				} catch (ParseException e) {
-					e.printStackTrace();
+					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
 				}
 			}
 			//短信
@@ -70,11 +77,17 @@ public class DeliverChildThread extends Thread {
 					new DbService(trans).processMo(channel.getId(), deliver.getDstTermId(), 3, deliver.getSrcTermId(), deliver.getSm().getMessage(), index, totle);
 					trans.commit();
 				} catch (Exception ex) {
+					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
+					
 					trans.rollback();
 				} finally {
 					trans.close();
 				}
 			}
+		}
+		
+		if(delivVos.size() > 0){
+			SmsCache.queue3.addAll(delivVos);
 		}
 	}
 }

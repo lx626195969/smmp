@@ -72,7 +72,7 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 		session.write(request);
 		
 		// 启动ActiveTest链路心跳检测Thread
-		heartbeatThread = new ActiveTestThread(session);
+		heartbeatThread = new ActiveTestThread(session, channel.getId());
 		heartbeatThread.start();
 		//将启动的线程加入缓存管理
 		ChannelCacheUtil.put("thread_" + channel.getId(), "heartbeatThread", heartbeatThread);

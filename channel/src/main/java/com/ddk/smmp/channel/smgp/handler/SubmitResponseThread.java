@@ -7,9 +7,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.ConstantUtils;
 import com.ddk.smmp.channel.smgp.msg.SubmitResp;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 
 /**
  * 
@@ -17,6 +21,8 @@ import com.ddk.smmp.channel.smgp.msg.SubmitResp;
  * 
  */
 public class SubmitResponseThread extends Thread {
+	private static final Logger logger = Logger.getLogger(SubmitResponseThread.class);
+	
 	/** 待处理响应消息队列 */
 	public BlockingQueue<SubmitResp> queue = new LinkedBlockingQueue<SubmitResp>();
 	Channel channel = null;
@@ -42,15 +48,18 @@ public class SubmitResponseThread extends Thread {
 					Thread.sleep(10 * 60 * 1000);
 				}
 				
-				if(queue.size() >= 20 || isDrainTo()){
-					int num = queue.drainTo(tempList, 20);
+				if(queue.size() >= 200 || isDrainTo()){
+					int num = queue.drainTo(tempList, 200);
+					lastDrainToTime = System.currentTimeMillis();
 					
 					if(num > 0){
 						submitRespThreadPool.execute(new SubmitResponseChildThread(tempList, channel));
 					}
+				}else{
+					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {
-				
+				ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
 			}
 		}
 	}
@@ -71,6 +80,6 @@ public class SubmitResponseThread extends Thread {
 	 * @return
 	 */
 	private boolean isDrainTo(){
-		return ((System.currentTimeMillis() - lastDrainToTime) >= 1000 * 5);
+		return ((System.currentTimeMillis() - lastDrainToTime) >= 1000 * 10);
 	}
 }

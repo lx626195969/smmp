@@ -10,9 +10,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.ConstantUtils;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.model.SmQueue;
 import com.ddk.smmp.service.DbService;
 
@@ -22,6 +26,8 @@ import com.ddk.smmp.service.DbService;
  *         短消息提交处理类
  */
 public class SubmitThread extends Thread{
+	private static final Logger logger = Logger.getLogger(SubmitThread.class);
+	
 	/** 网关每秒提交量限制（即队列大小） */
 	private int smgFlowLimit = 100;
 	/** 待发送消息队列 */
@@ -32,6 +38,8 @@ public class SubmitThread extends Thread{
 	private ExecutorService submitDataThreadPool = null;
 	/** 通道 */
 	private Channel channel = null;
+	
+	private long lastDrainToTime;
 	
 	/** 标识位 用来结束阻塞 */
 	private boolean isContinue = true;
@@ -44,7 +52,8 @@ public class SubmitThread extends Thread{
 		}
 		this.queue = new LinkedBlockingQueue<SmQueue>(smgFlowLimit);
 		this.watchDataThreadPool = new ScheduledThreadPoolExecutor(1);
-		this.submitDataThreadPool = Executors.newFixedThreadPool(10);
+		this.submitDataThreadPool = Executors.newFixedThreadPool(2);
+		lastDrainToTime = System.currentTimeMillis();
 	}
 
 	@Override
@@ -81,6 +90,7 @@ public class SubmitThread extends Thread{
 						temp = new DbService(trans).getMsgFromQueueAndLockMsg(channel.getId(), limit);
 						trans.commit();
 					} catch (Exception ex) {
+						ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
 						trans.rollback();
 					} finally {
 						trans.close();
@@ -108,15 +118,29 @@ public class SubmitThread extends Thread{
 						Thread.sleep(10 * 60 * 1000);
 					}
 					
-					int num = queue.drainTo(tempList, 20);
-					
-					if(num > 0){
-						submitDataThreadPool.execute(new SubmitChildThread(tempList, channel));
+					if(queue.size() >= (smgFlowLimit/2) || isDrainTo()){
+						int num = queue.drainTo(tempList, (smgFlowLimit/2));
+						lastDrainToTime = System.currentTimeMillis();
+						
+						if(num > 0){
+							submitDataThreadPool.execute(new SubmitChildThread(tempList, channel));
+						}
+					}else{
+						Thread.sleep(1000);
 					}
 				}
 			} catch (InterruptedException e1) {
 				
 			}
 		}
+	}
+	
+	/**
+	 * 距离上次处理时间是否过去10S
+	 * 
+	 * @return
+	 */
+	private boolean isDrainTo(){
+		return ((System.currentTimeMillis() - lastDrainToTime) >= 1000 * 10);
 	}
 }

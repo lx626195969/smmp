@@ -4,6 +4,8 @@ import org.apache.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 
 import com.ddk.smmp.channel.smgp.msg.ActiveTest;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 
 /**
  * 
@@ -19,6 +21,7 @@ public class ActiveTestThread extends Thread {
 	private long reconnectInterval = 10000;
 	private long lastCheckTime = 0;
 	private long lastActiveTime = 0;
+	int cid;
 	
 	public void setLastActiveTime(long lastActiveTime) {
 		this.lastActiveTime = lastActiveTime;
@@ -29,11 +32,12 @@ public class ActiveTestThread extends Thread {
 	 * 
 	 * @param s
 	 */
-	public ActiveTestThread(IoSession s) {
+	public ActiveTestThread(IoSession s, int cid) {
 		setDaemon(true);
 		this.session = s;
 		lastCheckTime = System.currentTimeMillis();
 		lastActiveTime = System.currentTimeMillis();
+		this.cid = cid;
 	}
 
 	@Override
@@ -44,7 +48,7 @@ public class ActiveTestThread extends Thread {
 				
 				//校验间隔时间大于心跳时间
 				if ((currentTime - lastCheckTime) > heartbeatInterval) {
-					logger.info("CmppSession.checkConnection");
+					ChannelLog.log(logger, "CmppSession.checkConnection", LevelUtils.getSucLevel(cid));
 					//校验间隔时间小于心跳时间*心跳次数
 					if ((currentTime - lastActiveTime) < (heartbeatInterval * heartbeatRetry)) {
 						lastCheckTime = currentTime;//设置最后心跳时间为当前时间
@@ -53,7 +57,7 @@ public class ActiveTestThread extends Thread {
 						activeTest.timeStamp = currentTime;
 						session.write(activeTest);
 					} else {
-						logger.info("connection lost!");
+						ChannelLog.log(logger, "connection lost!", LevelUtils.getSucLevel(cid));
 						session.close(true);
 						break;
 					}
@@ -61,11 +65,11 @@ public class ActiveTestThread extends Thread {
 				try {
 					Thread.sleep(reconnectInterval);
 				} catch (InterruptedException e) {
-					
+					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(cid), e.getCause());
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(cid), e.getCause());
 		}
 	}
 }

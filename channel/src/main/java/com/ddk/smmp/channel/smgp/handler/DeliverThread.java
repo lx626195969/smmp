@@ -7,9 +7,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.ConstantUtils;
 import com.ddk.smmp.channel.smgp.msg.Deliver;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 
 /**
  * 
@@ -17,6 +21,8 @@ import com.ddk.smmp.channel.smgp.msg.Deliver;
  * 状态报告处理线程
  */
 public class DeliverThread extends Thread {
+	private static final Logger logger = Logger.getLogger(DeliverThread.class);
+	
 	/** 待处理报告消息队列 */
 	public BlockingQueue<Deliver> queue = new LinkedBlockingQueue<Deliver>();
 	Channel channel = null;
@@ -41,15 +47,18 @@ public class DeliverThread extends Thread {
 					Thread.sleep(10 * 60 * 1000);
 				}
 				
-				if(queue.size() >= 20 || isDrainTo()){
-					int num = queue.drainTo(tempList, 20);
+				if(queue.size() >= 200 || isDrainTo()){
+					int num = queue.drainTo(tempList, 200);
+					lastDrainToTime = System.currentTimeMillis();
 					
 					if(num > 0){
 						delivrdThreadPool.execute(new DeliverChildThread(tempList, channel));
 					}
+				}else{
+					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {
-				
+				ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
 			}
 		}
 	}
@@ -70,6 +79,6 @@ public class DeliverThread extends Thread {
 	 * @return
 	 */
 	private boolean isDrainTo(){
-		return ((System.currentTimeMillis() - lastDrainToTime) >= 1000 * 5);
+		return ((System.currentTimeMillis() - lastDrainToTime) >= 1000 * 10);
 	}
 }

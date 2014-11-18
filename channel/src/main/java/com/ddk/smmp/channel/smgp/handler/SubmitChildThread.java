@@ -4,21 +4,26 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.ChannelCacheUtil;
 import com.ddk.smmp.channel.smgp.helper.LongSMByte;
 import com.ddk.smmp.channel.smgp.helper.ShortMessage;
 import com.ddk.smmp.channel.smgp.msg.Submit;
 import com.ddk.smmp.dao.SubmitVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.model.SmQueue;
-import com.ddk.smmp.service.DbService;
+import com.ddk.smmp.thread.SmsCache;
 
 /**
  * @author leeson 2014-6-12 下午01:05:57 li_mr_ceo@163.com <br>
  *         提交短信的线程
  */
 public class SubmitChildThread extends Thread {
+	private static final Logger logger = Logger.getLogger(SubmitChildThread.class);
+	
 	List<SmQueue> queueList = null;
 	Channel channel = null;
 	
@@ -30,6 +35,8 @@ public class SubmitChildThread extends Thread {
 
 	@Override
 	public void run() {
+		long s = System.currentTimeMillis();
+		
 		StringBuffer idStringBuffer = new StringBuffer();
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		
@@ -72,7 +79,7 @@ public class SubmitChildThread extends Thread {
 				try {
 					msgBytes = queue.getContent().getBytes("UnicodeBigUnmarked");
 				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
+					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
 				}
 				
 				if(null != msgBytes){
@@ -88,17 +95,12 @@ public class SubmitChildThread extends Thread {
 			submitVos.add(new SubmitVo(queue.getId(), submit.getSequenceNumber(), channel.getId()));
 		}
 		
-		//批量添加消息提交数据
-		DatabaseTransaction trans = new DatabaseTransaction(true);
-		try {
-			DbService service = new DbService(trans);
-			service.batchAddSubmit(submitVos);//保存提交消息
-			//service.batchDelQueue(channel.getId(), idStringBuffer.toString());//批量删除队列表记录
-			trans.commit();
-		} catch (Exception ex) {
-			trans.rollback();
-		} finally {
-			trans.close();
+		
+		if(submitVos.size() > 0){
+			SmsCache.queue1.addAll(submitVos);
 		}
+		
+		long e = System.currentTimeMillis();
+		ChannelLog.log(logger, "发送消息[" + queueList.size() + "]条|耗时" + (e - s), LevelUtils.getErrLevel(channel.getId()));
 	}
 }
