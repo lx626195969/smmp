@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+	<appender name="Console" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="10000" />
+			<param name="levelMax" value="40000" />
+			<param name="AcceptOnMatch" value="true" />
+		</filter>
+	</appender>
+
+	<!--定义全局日志 -->
+	<appender name="all" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="./logs/all.log" />
+		<param name="Append" value="true" />
+		<param name="MaxBackupIndex" value="10" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="levelMin" value="info" />
+			<param name="levelMax" value="error" />
+			<param name="AcceptOnMatch" value="true" />
+		</filter>
+	</appender>
+	
+	<appender name="moni" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/moni.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11009" />
+			<param name="levelMax" value="11009" />
+		</filter>
+	</appender>
+	<appender name="moniErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/moni_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12009" />
+			<param name="levelMax" value="12009" />
+		</filter>
+	</appender>
+	<appender name="guanyi" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/guanyi.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11007" />
+			<param name="levelMax" value="11007" />
+		</filter>
+	</appender>
+	<appender name="guanyiErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/guanyi_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12007" />
+			<param name="levelMax" value="12007" />
+		</filter>
+	</appender>
+	<appender name="maiyuan" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/maiyuan.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11008" />
+			<param name="levelMax" value="11008" />
+		</filter>
+	</appender>
+	<appender name="maiyuanErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/maiyuan_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12008" />
+			<param name="levelMax" value="12008" />
+		</filter>
+	</appender>
+	<appender name="jiaying" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/jiaying.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11010" />
+			<param name="levelMax" value="11010" />
+		</filter>
+	</appender>
+	<appender name="jiayingErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/jiaying_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12010" />
+			<param name="levelMax" value="12010" />
+		</filter>
+	</appender>
+	<appender name="yuzhou" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/yuzhou.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11011" />
+			<param name="levelMax" value="11011" />
+		</filter>
+	</appender>
+	<appender name="yuzhouErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/yuzhou_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12011" />
+			<param name="levelMax" value="12011" />
+		</filter>
+	</appender>
+	<appender name="yuzhoucmpp" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/yuzhoucmpp.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11012" />
+			<param name="levelMax" value="11012" />
+		</filter>
+	</appender>
+	<appender name="yuzhoucmppErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/yuzhoucmpp_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12012" />
+			<param name="levelMax" value="12012" />
+		</filter>
+	</appender>
+	<!-- 根logger的设置 -->
+	<root>
+		<priority value="DEBUG" />
+		<appender-ref ref="Console" />
+		<appender-ref ref="all" />
+		<appender-ref ref="moni" />
+		<appender-ref ref="moniErr" />
+		<appender-ref ref="guanyi" />
+		<appender-ref ref="guanyiErr" />
+		<appender-ref ref="maiyuan" />
+		<appender-ref ref="maiyuanErr" />
+		<appender-ref ref="jiaying" />
+		<appender-ref ref="jiayingErr" />
+		<appender-ref ref="yuzhou" />
+		<appender-ref ref="yuzhouErr" />
+		<appender-ref ref="yuzhoucmpp" />
+		<appender-ref ref="yuzhoucmppErr" />
+	</root>
+</log4j:configuration>
