@@ -74,7 +74,7 @@ public class ChannelAdapter {
 					client = ctor.newInstance(new Object[]{ channel });
 					client.start();
 					
-					Thread.sleep(5000);//5S等待通道启动完成
+					Thread.sleep(10000);//10S等待通道启动完成
 					
 					//启动成功将通道加入缓存
 					if(client.status().intValue() == 1){
