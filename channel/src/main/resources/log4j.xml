@@ -148,6 +148,27 @@
 			<param name="levelMax" value="12012" />
 		</filter>
 	</appender>
+	
+	<appender name="zhejiang" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/zhejiang.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11013" />
+			<param name="levelMax" value="11013" />
+		</filter>
+	</appender>
+	<appender name="zhejiangErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/zhejiang_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12013" />
+			<param name="levelMax" value="12013" />
+		</filter>
+	</appender>
 	<!-- 根logger的设置 -->
 	<root>
 		<priority value="DEBUG" />
@@ -165,5 +186,7 @@
 		<appender-ref ref="yuzhouErr" />
 		<appender-ref ref="yuzhoucmpp" />
 		<appender-ref ref="yuzhoucmppErr" />
+		<appender-ref ref="zhejiang" />
+		<appender-ref ref="zhejiangErr" />
 	</root>
 </log4j:configuration>
