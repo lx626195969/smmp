@@ -30,9 +30,6 @@ public class ChannelAdapter {
 	public static void main(String[] args){
 		try {
 			DruidDatabaseConnectionPool.startup();
-			//ChannelAdapter.getInstance().start(new Channel(7, "", 2, "192.168.0.114", 7891, null, 2, "09996", "901235", null, "1235", 200, null, 70, 0, 8, 1, null, 0));
-			//ChannelAdapter.getInstance().start(new Channel(12, 4, null, null, null, 5, null, "xywl", "90045", "xywl555", 200, null, 70, 0, null, 1, "http://210.5.158.31/hy/"));
-			//ChannelAdapter.getInstance().start(new Channel(11, "", 4, null, null, 10005, 9, "9653", "010001000519", "希奥联通", "60db56ff921a1ce8bb37e4e1099cf676", 20, null, 70, 0, null, 1, "http://api.10690909.com/newmt", 0));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
