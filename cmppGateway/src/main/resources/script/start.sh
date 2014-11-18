@@ -1,0 +1,1 @@
+java -Xms512M -Xmx512M -cp . -Dfile.encoding=UTF-8 -Djava.ext.dirs=./lib com.sioo.cmppgw.business.MainStart &
