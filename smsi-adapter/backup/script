@@ -1,0 +1,6 @@
+#生成服务端
+wsdl2java -p com.ddk.smmp.adapter.webservice.server -d D:/work/workspace/smsi-adapter/src/main/java -server smsi.wsdl
+#生成实现类
+wsdl2java -p com.ddk.smmp.adapter.webservice.server -d D:/work/workspace/smsi-adapter/src/main/java -impl smsi.wsdl
+#生成客户端
+wsdl2java -p com.ddk.smmp.adapter.webservice.client -d D:/work/workspace/smsi-adapter/src/test/java -client http://127.0.0.1:8080/sioo?wsdl
