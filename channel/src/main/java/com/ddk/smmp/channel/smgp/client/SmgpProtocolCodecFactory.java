@@ -11,14 +11,19 @@ import org.apache.mina.filter.codec.ProtocolEncoder;
  *         消息CODEC Factory
  */
 public class SmgpProtocolCodecFactory implements ProtocolCodecFactory {
-	private ProtocolDecoder decoder = new SmgpRequestDecoder();
-	private ProtocolEncoder encoder = new SmgpResponseEncoder();
-
+	
+	int cid;
+	
+	public SmgpProtocolCodecFactory(int cid) {
+		super();
+		this.cid = cid;
+	}
+	
 	public ProtocolDecoder getDecoder(IoSession sessionIn) throws Exception {
-		return decoder;
+		return new SmgpRequestDecoder(cid);
 	}
 
 	public ProtocolEncoder getEncoder(IoSession sessionIn) throws Exception {
-		return encoder;
+		return new SmgpResponseEncoder(cid);
 	}
 }

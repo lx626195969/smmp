@@ -10,8 +10,11 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 import com.ddk.smmp.channel.Channel;
+import com.ddk.smmp.channel.ChannelCacheUtil;
 import com.ddk.smmp.channel.Client;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.service.DbService;
 
 /**
@@ -29,6 +32,7 @@ public class SmgpClient implements Client {
 	public SmgpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	@Override
@@ -39,6 +43,7 @@ public class SmgpClient implements Client {
 				new DbService(trans).addChannelLog(channel.getId(), channel.getName(), "通道启动");
 				trans.commit();
 			} catch (Exception ex) {
+				ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
 				trans.rollback();
 			} finally {
 				trans.close();
@@ -54,18 +59,18 @@ public class SmgpClient implements Client {
 					try {
 						connector.setConnectTimeoutMillis(3000);// set connect timeout
 						connector.getSessionConfig().setReadBufferSize(10240);//设置缓冲区大小
-						connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new SmgpProtocolCodecFactory()));// 创建接受数据的过滤器
+						connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new SmgpProtocolCodecFactory(channel.getId())));// 创建接受数据的过滤器
 						connector.setDefaultRemoteAddress(defaultAddress);//设置默认访问地址  
 						connector.setHandler(new SmgpClientIoHandler(channel));
 						// 添加重连监听 
 						connector.addListener(new IoListener(){
 							@Override
 							public void sessionDestroyed(IoSession session) throws Exception {
-								logger.info("[smgp]监听到session关闭"); 
+								ChannelLog.log(logger, "[smgp]监听到session关闭", LevelUtils.getSucLevel(channel.getId()));
 								
 								for (;;) {
 									if(channel.isReConnect()){
-										logger.info("[smgp]开始重连");
+										ChannelLog.log(logger, "[smgp]开始重连", LevelUtils.getSucLevel(channel.getId()));
 										
 										//更改状态为重连中
 										DatabaseTransaction trans = new DatabaseTransaction(true);
@@ -73,6 +78,7 @@ public class SmgpClient implements Client {
 											new DbService(trans).updateChannelStatus(channel.getId(), 3);
 											trans.commit();
 										} catch (Exception ex) {
+											ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
 											trans.rollback();
 										} finally {
 											trans.close();
@@ -81,7 +87,7 @@ public class SmgpClient implements Client {
 										try {
 											channel.getSession().close(true);
 										} catch (Exception e) {
-											logger.info("[smgp]开始重连,强制关闭之前session");
+											ChannelLog.log(logger, "[smgp]开始重连,强制关闭之前session" + e.getMessage(), LevelUtils.getSucLevel(channel.getId()), e.getCause());
 										}
 										
 										DatabaseTransaction trans1 = new DatabaseTransaction(true);
@@ -90,23 +96,27 @@ public class SmgpClient implements Client {
 											dbService.addChannelLog(channel.getId(), channel.getName(), "通道重连");
 											trans1.commit();
 										} catch (Exception ex) {
+											ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
 											trans1.rollback();
 										} finally {
 											trans1.close();
 										}
 										
 						                try {
-						                	Thread.sleep(55 * 1000);
+						                	Thread.sleep(5 * 1000);
 						                    ConnectFuture future = connector.connect();  
 						                    future.awaitUninterruptibly();// 等待连接创建成功
 						                    session = future.getSession();// 获取会话 
-						                    Thread.sleep(5000);
+						                    Thread.sleep(1000);
 						                    if (session.isConnected() && null != session.getAttribute("isSend")) {
-						                    	logger.info("[smgp]断线重连[" + defaultAddress.getHostName() + ":" + defaultAddress.getPort() + "]成功");  
-						                        break;
+						                    	ChannelCacheUtil.put("client", "channel_" + channel.getId(), channel.getClient());
+						                    	
+						                    	ChannelLog.log(logger, "[smgp]断线重连[" + defaultAddress.getHostName() + ":" + defaultAddress.getPort() + "]成功", LevelUtils.getSucLevel(channel.getId()));
+						                        
+						                    	break;
 						                    }
 						                } catch (Exception ex) {
-						                    logger.info("[smgp]重连服务器登录失败,60秒再连接一次:" + ex.getMessage());  
+						                	ChannelLog.log(logger, "[smgp]重连服务器登录失败,60秒再连接一次:" + ex.getMessage(), LevelUtils.getSucLevel(channel.getId()), ex.getCause());
 						                }
 									}else{
 										break;
@@ -117,8 +127,8 @@ public class SmgpClient implements Client {
 						ConnectFuture cf = connector.connect();// 连接到服务器
 						cf.awaitUninterruptibly();// 等待连接创建成功
 						cf.getSession().getCloseFuture().awaitUninterruptibly();
-						connector.dispose();
 					} catch (Exception e1) {
+						ChannelLog.log(logger, e1.getMessage(), LevelUtils.getErrLevel(channel.getId()), e1.getCause());
 						connector.dispose();
 					}
 				}
@@ -136,6 +146,7 @@ public class SmgpClient implements Client {
 				dbService.updateChannelStatus(channel.getId(), 2);
 				trans.commit();
 			} catch (Exception ex) {
+				ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
 				trans.rollback();
 			} finally {
 				trans.close();

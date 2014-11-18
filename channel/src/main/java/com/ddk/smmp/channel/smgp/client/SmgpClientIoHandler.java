@@ -24,6 +24,8 @@ import com.ddk.smmp.channel.smgp.msg.LoginResp;
 import com.ddk.smmp.channel.smgp.msg.SubmitResp;
 import com.ddk.smmp.channel.smgp.msg.parent.SmgpMSG;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.service.DbService;
 
 /**
@@ -47,16 +49,16 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
 		if (!(cause instanceof IOException)) {
-			logger.info("Exception: ", cause);
+			ChannelLog.log(logger, "Exception: " + cause.getMessage(), LevelUtils.getErrLevel(channel.getId()), cause);
 		} else {
-			logger.info("I/O error: " + cause.getMessage());
+			ChannelLog.log(logger, "I/O error: " + cause.getMessage(), LevelUtils.getErrLevel(channel.getId()), cause);
 		}
 		session.close(true);
 	}
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		logger.info("Session " + session.getId() + " is opened");
+		ChannelLog.log(logger, "Session " + session.getId() + " is opened", LevelUtils.getSucLevel(channel.getId()));
 		
 		channel.setSession(session);
 		
@@ -80,7 +82,8 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {
-		logger.info("Creation of session " + session.getId());
+		ChannelLog.log(logger, "Creation of session " + session.getId(), LevelUtils.getSucLevel(channel.getId()));
+		
 		session.suspendRead();//暂停读取
 	}
 
@@ -99,6 +102,8 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 			dbService.updateChannelStatus(channel.getId(), 2);
 			trans.commit();
 		} catch (Exception ex) {
+			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
+			
 			trans.rollback();
 		} finally {
 			trans.close();
@@ -123,7 +128,7 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 		ChannelCacheUtil.clear("thread_" + channel.getId());
 		ChannelCacheUtil.clear("message_" + channel.getId());
 		
-		logger.info(session.getId() + "> Session closed");
+		ChannelLog.log(logger, session.getId() + "> Session closed", LevelUtils.getSucLevel(channel.getId()));
 	}
 
 	@Override
@@ -145,6 +150,8 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 					dbService.updateChannelStatus(channel.getId(), 1);
 					trans.commit();
 				} catch (Exception ex) {
+					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
+					
 					trans.rollback();
 				} finally {
 					trans.close();
@@ -185,7 +192,7 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 			
 		case SmgpConstant.CMD_EXIT:
 			Exit terminate = (Exit) msg;
-			logger.info("server requests to close the channel;");
+			ChannelLog.log(logger, "server requests to close the channel;", LevelUtils.getSucLevel(channel.getId()));
 			ExitResp terminateResp = (ExitResp)terminate.getResponse();
 			session.write(terminateResp);
 			break;
@@ -209,7 +216,7 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 
 			break;
 		default:
-			logger.warn("Unexpected MSG received! MSG Header: " + msg.header.getData().getHexDump());
+			ChannelLog.log(logger, "Unexpected MSG received! MSG Header: " + msg.header.getData().getHexDump(), LevelUtils.getErrLevel(channel.getId()));
 			session.close(true);
 			break;
 		}

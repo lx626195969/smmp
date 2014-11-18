@@ -9,6 +9,8 @@ import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import com.ddk.smmp.channel.smgp.helper.ByteBuffer;
 import com.ddk.smmp.channel.smgp.helper.SmgpMSGParser;
 import com.ddk.smmp.channel.smgp.msg.parent.SmgpMSG;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 
 /**
  * 
@@ -18,6 +20,18 @@ import com.ddk.smmp.channel.smgp.msg.parent.SmgpMSG;
 public class SmgpRequestDecoder extends CumulativeProtocolDecoder {
 	private static final Logger logger = Logger.getLogger(SmgpRequestDecoder.class);
 
+	
+	private int cid;
+	
+	public SmgpRequestDecoder() {
+		super();
+	}
+	
+	public SmgpRequestDecoder(int cid) {
+		super();
+		this.cid = cid;
+	}
+	
 	@Override
 	protected boolean doDecode(final IoSession session, IoBuffer in, ProtocolDecoderOutput out) throws Exception {
 		// 考虑以下几种情况：
@@ -47,10 +61,9 @@ public class SmgpRequestDecoder extends CumulativeProtocolDecoder {
 			
 			out.write(msg);
 			
-			logger.info("resv msg " + in.toString() + "\r\n"  + "commandLength<" + msg.getCommandLength() + "> commandId<" + msg.getCommandId() + "> seq<" + msg.getSequenceNumber() + ">" + msg.dump());
+			ChannelLog.log(logger, "resv msg " + in.toString() + "\r\n"  + "commandLength<" + msg.getCommandLength() + "> commandId<" + msg.getCommandId() + "> seq<" + msg.getSequenceNumber() + ">" + msg.dump(), LevelUtils.getSucLevel(cid));
 			
 			return true;
-
 		}
 		return false;
 	}

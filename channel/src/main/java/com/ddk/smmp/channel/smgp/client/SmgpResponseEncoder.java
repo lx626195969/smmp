@@ -7,6 +7,8 @@ import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
 import com.ddk.smmp.channel.smgp.msg.parent.SmgpMSG;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
 
 /**
  * 
@@ -16,6 +18,17 @@ import com.ddk.smmp.channel.smgp.msg.parent.SmgpMSG;
 public class SmgpResponseEncoder extends ProtocolEncoderAdapter {
 	private static final Logger logger = Logger.getLogger(SmgpResponseEncoder.class);
 
+	private int cid;
+	
+	public SmgpResponseEncoder() {
+		super();
+	}
+	
+	public SmgpResponseEncoder(int cid) {
+		super();
+		this.cid = cid;
+	}
+	
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
 		SmgpMSG msg = (SmgpMSG) message;
@@ -26,7 +39,7 @@ public class SmgpResponseEncoder extends ProtocolEncoderAdapter {
 		buf.put(bytes);
 		buf.flip();
 		
-		logger.info("send msg " + buf.toString() + "\r\n" + "commandLength<" + msg.getCommandLength() + "> commandId<" + msg.getCommandId() + "> seq<" + msg.getSequenceNumber() + ">" + msg.dump());
+		ChannelLog.log(logger, "send msg " + buf.toString() + "\r\n" + "commandLength<" + msg.getCommandLength() + "> commandId<" + msg.getCommandId() + "> seq<" + msg.getSequenceNumber() + ">" + msg.dump(), LevelUtils.getSucLevel(cid));
 		
 		out.write(buf);
 	}
