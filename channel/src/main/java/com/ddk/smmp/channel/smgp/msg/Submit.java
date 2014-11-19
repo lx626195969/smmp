@@ -107,7 +107,7 @@ public class Submit extends Request {
 			temp = integerToByte(1);
 			buffer.appendByte(temp[3]);
 			/*============处理长短信的pkTotle============*/
-			temp = integerToByte(0x0010);
+			temp = integerToByte(0x0009);
 			buffer.appendByte(temp[2]);
 			buffer.appendByte(temp[3]);
 			temp = integerToByte(1);
