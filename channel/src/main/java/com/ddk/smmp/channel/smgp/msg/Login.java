@@ -21,7 +21,7 @@ import com.ddk.smmp.channel.smgp.msg.parent.Response;
 public class Login extends Request {
 	private String clientId = "";
 	private byte[] authClient = new byte[16];
-	private int loginMode = 0;//0＝发送短消息（send mode）； 1＝接收短消息（receive mode）； 2＝收发短消息（transmit mode）；
+	private int loginMode = 2;//0＝发送短消息（send mode）； 1＝接收短消息（receive mode）； 2＝收发短消息（transmit mode）；
 	private int timeStamp = 0;
 	private int version = 0x30;//int值48
 	

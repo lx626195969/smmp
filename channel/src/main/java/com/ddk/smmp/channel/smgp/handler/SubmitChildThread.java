@@ -54,6 +54,7 @@ public class SubmitChildThread extends Thread {
 			submit.setDestTermIdCount((byte) 1);
 			submit.setDestTermId(new String[] { queue.getPhone() });// 接收号码
 			submit.assignSequenceNumber();
+			submit.setSpId(channel.getCompanyCode());
 
 			List<byte[]> smArray = LongSMByte.getLongByte(channel.getSupportLen(), channel.getSignNum(), queue.getContent());
 			
@@ -62,7 +63,7 @@ public class SubmitChildThread extends Thread {
 				submit.setSuper(true);
 				submit.setPkTotle(smArray.size());
 				for (int j = 1; j <= smArray.size(); j++) {
-					byte[] SM = smArray.get(j);
+					byte[] SM = smArray.get(j - 1);
 					ShortMessage sm = new ShortMessage();
 					sm.setMessage(SM, (byte) 8);
 					

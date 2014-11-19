@@ -18,11 +18,16 @@ public class Tools {
 	 * @param msgId
 	 * @return
 	 */
-	public static String resolveSMGP_MsgId(byte[] msgId){
-		if(msgId.length != 10){
+	public static String resolveSMGP_MsgId(byte[] msgId) {
+		if (msgId.length != 10) {
 			return null;
 		}
-		return BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 0, 3)) + BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 3, 7)) + BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 7, 10));
+//		return BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 0, 3))
+//				+ BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 3, 7))
+//				+ BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 7, 10));
+		//由于太长转不了Long类型 所以去掉第一部分
+		return BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 3, 7))
+				+ BCDUtils.bcd2Str(Arrays.copyOfRange(msgId, 7, 10));
 	}
 	
 	/**

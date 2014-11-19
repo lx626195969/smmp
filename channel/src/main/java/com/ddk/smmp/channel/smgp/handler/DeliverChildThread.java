@@ -9,8 +9,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
-import com.ddk.smmp.channel.smgp.exception.NotEnoughDataInByteBufferException;
-import com.ddk.smmp.channel.smgp.helper.ByteBuffer;
 import com.ddk.smmp.channel.smgp.msg.Deliver;
 import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
@@ -44,10 +42,8 @@ public class DeliverChildThread extends Thread {
 			//状态报告
 			if(deliver.getIsReport() == 1){
 				try {
-					ByteBuffer contentBuffer = deliver.getSm().getData();
-					String msgId = contentBuffer.removeStringEx(10);
-					contentBuffer.removeBytes(3 + 3 + 10 + 10);
-					String state = contentBuffer.removeStringEx(7);
+					String msgId = deliver.getReport_msg_id();
+					String state = deliver.getReport_stat();
 					
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 					Date receiveTime = sdf.parse(deliver.getRecvTime());
@@ -56,8 +52,6 @@ public class DeliverChildThread extends Thread {
 					
 					//添加报告到待处理集合
 					delivVos.add(new DelivVo(Long.parseLong(msgId), channel.getId(), state, time));
-				} catch (NotEnoughDataInByteBufferException e) {
-					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
 				} catch (ParseException e) {
 					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
 				}
@@ -66,15 +60,7 @@ public class DeliverChildThread extends Thread {
 			else{
 				DatabaseTransaction trans = new DatabaseTransaction(true);
 				try {
-					int index = 1;
-					int totle = 1;
-					if(deliver.getSm().isSuper()){
-						byte[] contentBytes = deliver.getSm().getData().getBuffer();
-						index = contentBytes[5];
-						totle = contentBytes[4];
-					}
-					
-					new DbService(trans).processMo(channel.getId(), deliver.getDstTermId(), 3, deliver.getSrcTermId(), deliver.getSm().getMessage(), index, totle);
+					new DbService(trans).processMo(channel.getId(), deliver.getDstTermId(), 3, deliver.getSrcTermId(), deliver.getContent(), deliver.getPknumber(), deliver.getPktotal());
 					trans.commit();
 				} catch (Exception ex) {
 					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());

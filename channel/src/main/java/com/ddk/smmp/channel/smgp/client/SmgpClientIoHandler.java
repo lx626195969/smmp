@@ -63,8 +63,8 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 		channel.setSession(session);
 		
 		// 向服务端发起Connect消息
-		Login request = new Login(SmgpConstant.TRANSMITTER);
-		request.setClientId(channel.getCompanyCode());
+		Login request = new Login();
+		request.setClientId(channel.getAccount());
 		request.setSharedSecret(channel.getPassword());
 		request.setTimeStamp(request.genTimeStamp());
 		request.setAuthClient(request.genAuthClient());

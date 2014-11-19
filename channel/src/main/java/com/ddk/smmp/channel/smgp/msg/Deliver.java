@@ -1,6 +1,6 @@
 package com.ddk.smmp.channel.smgp.msg;
 
-import java.util.Arrays;
+import java.io.UnsupportedEncodingException;
 
 import com.ddk.smmp.channel.smgp.exception.MSGException;
 import com.ddk.smmp.channel.smgp.exception.NotEnoughDataInByteBufferException;
@@ -20,11 +20,21 @@ public class Deliver extends Request {
 
 	private String msgId = "";
 	private byte isReport = 0;
+	private int msgFormat;
 	private ShortMessage sm = new ShortMessage();
 	private String recvTime = "";
 	private String srcTermId = "";
 	private String dstTermId = "";
+	private int msgLength;
+	private String content;
 	private String reserve = "";
+	private int pktotal = 1;
+	private int pknumber = 1;
+	private int tp_udhi;
+	private int seqTemp = 0;
+	
+	private String report_msg_id;
+	private String report_stat;
 	
 	public Deliver() {
 		super(SmgpConstant.CMD_DELIVER);
@@ -39,23 +49,63 @@ public class Deliver extends Request {
 		try {
 			msgId = Tools.resolveSMGP_MsgId(buffer.removeBytes(10).getBuffer());
 			isReport = buffer.removeByte();
-			byte msgFormat = buffer.removeByte();
+			msgFormat = buffer.removeByte();
 			recvTime = buffer.removeStringEx(14);
 			srcTermId = buffer.removeStringEx(21);
 			dstTermId = buffer.removeStringEx(21);
-			
 			byte signbyte = buffer.removeByte();
-			int msgLength = signbyte < 0 ? signbyte + 256 : signbyte;
-			if (msgLength > 0)
-				sm.setData(buffer.removeBuffer(msgLength));
-			sm.setMsgFormat(msgFormat);
+			msgLength = signbyte < 0 ? signbyte + 256 : signbyte;
+			byte[] contentByte = buffer.removeBuffer(msgLength).getBuffer();
+			reserve = buffer.removeStringEx(8);
 			
-			byte[] temp = sm.getData().getBuffer();//判断是不是长短信
-			if(temp[0] == 0x05 && temp[1] == 0x00 && temp[2] == 0x03){
-				sm.setSuper(true);
+			if (msgFormat == 0) {
+				try {
+					content = new String(contentByte, 0, msgLength, "ISO8859_1").trim();
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			} else if (msgFormat == 8) {
+				try {
+					byte[] head = new byte[6];
+					System.arraycopy(contentByte, 0, head, 0, 6);
+					if (head[0]==5) {
+						content = new String(contentByte, 6, msgLength - 6, "UnicodeBigUnmarked").trim();
+						this.tp_udhi = 1;
+						this.pktotal = head[4];
+						this.pknumber = head[5];
+						this.seqTemp = head[3];
+					} else {
+						content = new String(contentByte, 0, msgLength, "UnicodeBigUnmarked").trim();
+					}
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					content = new String(contentByte, 0, msgLength, "GBK").trim();
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 			}
 			
-			reserve = buffer.removeStringEx(8);
+			if (isReport == 1) {
+				try {
+					int pos = content.indexOf("id:");
+					byte[] msgBytes = null;
+					if (msgFormat == 0) {
+						msgBytes = content.substring(pos + 3, pos + 13).getBytes("ISO8859_1");
+					}else if (msgFormat == 8) {
+						msgBytes = content.substring(pos + 3, pos + 13).getBytes("UnicodeBigUnmarked");
+					}else{
+						msgBytes = content.substring(pos + 3, pos + 13).getBytes("GBK");
+					}
+					report_msg_id = Tools.resolveSMGP_MsgId(msgBytes);
+					pos = content.indexOf("stat:");
+					report_stat = content.substring(pos + 5, pos + 12);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
 		} catch (NotEnoughDataInByteBufferException e) {
 			throw new MSGException(e);
 		}
@@ -157,44 +207,105 @@ public class Deliver extends Request {
 	public void setReserve(String reserve) {
 		this.reserve = reserve;
 	}
+	
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public int getPktotal() {
+		return pktotal;
+	}
+
+	public void setPktotal(int pktotal) {
+		this.pktotal = pktotal;
+	}
+
+	public int getPknumber() {
+		return pknumber;
+	}
+
+	public void setPknumber(int pknumber) {
+		this.pknumber = pknumber;
+	}
+
+	public int getTp_udhi() {
+		return tp_udhi;
+	}
+
+	public void setTp_udhi(int tp_udhi) {
+		this.tp_udhi = tp_udhi;
+	}
+
+	public int getSeqTemp() {
+		return seqTemp;
+	}
+
+	public void setSeqTemp(int seqTemp) {
+		this.seqTemp = seqTemp;
+	}
+
+	public void setMsgFormat(int msgFormat) {
+		this.msgFormat = msgFormat;
+	}
+
+	public void setMsgLength(int msgLength) {
+		this.msgLength = msgLength;
+	}
+	
+	public String getReport_msg_id() {
+		return report_msg_id;
+	}
+
+	public void setReport_msg_id(String report_msg_id) {
+		this.report_msg_id = report_msg_id;
+	}
+
+	public String getReport_stat() {
+		return report_stat;
+	}
+
+	public void setReport_stat(String report_stat) {
+		this.report_stat = report_stat;
+	}
 
 	@Override
 	public String dump() {
 		String rt = "Deliver msg dump error..................";
-		try {
-			ByteBuffer contentBuffer = sm.getData();
 			rt = "\r\nDeliver***************************************"
 					  + "\r\nseqNo:             " + this.getSequenceNumber()
-					  + "\r\nmsgId:             " + getMsgId()
-					  + "\r\nisReport:          " + getIsReport()
-					  + "\r\nrecvTime:          " + getRecvTime()
-					  + "\r\nsrcTermID:         " + getSrcTermId()
-					  + "\r\ndstTermId:         " + getDstTermId()
-					  + "\r\nreserve:           " + getReserve()
-					  + "\r\nmsgFormat:         " + getMsgFormat()
-					  + "\r\nmsgLength:         " + getMsgLength()
-					  + "\r\nmsgContent:        " + Arrays.toString(sm.getData().getBuffer());
+					  + "\r\nmsgId:             " + this.msgId
+					  + "\r\nisReport:          " + this.isReport
+					  + "\r\nrecvTime:          " + this.recvTime
+					  + "\r\nsrcTermID:         " + this.srcTermId
+					  + "\r\ndstTermId:         " + this.dstTermId
+					  + "\r\nreserve:           " + this.reserve
+					  + "\r\nmsgFormat:         " + this.msgFormat
+					  + "\r\nmsgLength:         " + this.msgLength
+					  + "\r\nmsgContent:        " + this.content;
+			
 					  if(getIsReport() == 1){
-						      rt += "\r\n + Msg_Id:         " + contentBuffer.removeStringEx(10)
-						          + "\r\n + sub             " + contentBuffer.removeStringEx(3)
-						          + "\r\n + Dlvrd           " + contentBuffer.removeStringEx(3)
-						          + "\r\n + Submit_date:    " + contentBuffer.removeStringEx(10)
-						          + "\r\n + done_date:      " + contentBuffer.removeStringEx(10)
-								  + "\r\n + Stat:           " + contentBuffer.removeStringEx(7)
-								  + "\r\n + Err:            " + contentBuffer.removeStringEx(3)
-								  + "\r\n + Txt:            " + contentBuffer.removeStringEx(20);
+						      rt += "\r\n + Id:             " + this.report_msg_id
+								  + "\r\n + Stat:           " + this.report_stat;
 					  }else{
-						  rt += "\r\nmsgContent_:       " + sm.getMessage();
+						  rt += "\r\n + msg_content:             " + this.content
+							  + "\r\n + pkNumber:                " + this.pknumber
+							  + "\r\n + pkTotle:                " + this.pktotal;
 					  }
 					  rt += "\r\n****************************************Deliver";
-		} catch (NotEnoughDataInByteBufferException e) {
-			e.printStackTrace();
-		}
 		return rt;
 	}
 
 	@Override
 	public String name() {
 		return "SMGP Deliver";
+	}
+	
+	protected static int byte4ToInteger(byte[] b, int offset) {
+		return (0xff & b[offset]) << 24 | (0xff & b[offset + 1]) << 16
+				| (0xff & b[offset + 2]) << 8 | (0xff & b[offset + 3]);
 	}
 }

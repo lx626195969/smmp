@@ -1,5 +1,7 @@
 package com.ddk.smmp.channel.smgp.msg;
 
+import java.io.UnsupportedEncodingException;
+
 import com.ddk.smmp.channel.smgp.exception.MSGException;
 import com.ddk.smmp.channel.smgp.exception.NotEnoughDataInByteBufferException;
 import com.ddk.smmp.channel.smgp.helper.ByteBuffer;
@@ -14,13 +16,13 @@ import com.ddk.smmp.channel.smgp.msg.parent.Response;
  * 
  */
 public class Submit extends Request {
-	private byte msgType = 0x00;
+	private byte msgType = 0x06;
 	private byte needReport = 0x01;
-	private byte priority = 3;
-	private String serviceId = "";
-	private String feeType = "";
-	private String feeCode = "";
-	private String fixedFee = "";
+	private byte priority = 0;
+	private String serviceId = "PC2P";
+	private String feeType = "01";
+	private String feeCode = "0";
+	private String fixedFee = "0";
 	private ShortMessage sm = new ShortMessage();
 	private String validTime = "";
 	private String atTime = "";
@@ -33,6 +35,8 @@ public class Submit extends Request {
 	private boolean isSuper = false;
 	private int pkTotle;
 	private int pkNumber;
+	
+	private String spId;//企业ID
 	
 	public Submit() {
 		super(SmgpConstant.CMD_SUBMIT);
@@ -69,7 +73,7 @@ public class Submit extends Request {
 			throw new MSGException(e);
 		}
 	}
-
+	
 	public ByteBuffer getBody() {
 		ByteBuffer buffer = new ByteBuffer();
 		buffer.appendByte(msgType);
@@ -84,7 +88,6 @@ public class Submit extends Request {
 		buffer.appendString(atTime, 17);
 		buffer.appendString(srcTermId, 21);
 		buffer.appendString(chargeTermId, 21);
-		buffer.appendByte(destTermIdCount);
 		buffer.appendByte((byte) destTermId.length);
 		for (int i = 0; i < destTermId.length; i++)
 			buffer.appendString(destTermId[i], 21);
@@ -122,6 +125,27 @@ public class Submit extends Request {
 			temp = integerToByte(pkNumber);
 			buffer.appendByte(temp[3]);
 		}
+		
+		//msg_src
+		temp = integerToByte(0x0010);
+		buffer.appendByte(temp[2]);
+		buffer.appendByte(temp[3]);
+		//
+		temp = integerToByte(8);
+		buffer.appendByte(temp[2]);
+		buffer.appendByte(temp[3]);
+		
+		//SP_ID
+		temp = new byte[8];
+		byte[] tm = null;
+		try {
+			tm = spId.getBytes("GBK");
+			System.arraycopy(tm, 0, tm, 0, tm.length);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		buffer.appendBytes(temp);
+		
 		return buffer;
 	}
 	
@@ -138,6 +162,14 @@ public class Submit extends Request {
 		ByteBuffer buffer = header.getData();
 		buffer.appendBuffer(bodyBuf);
 		return buffer;
+	}
+
+	public String getSpId() {
+		return spId;
+	}
+
+	public void setSpId(String spId) {
+		this.spId = spId;
 	}
 
 	public boolean isSuper() {
