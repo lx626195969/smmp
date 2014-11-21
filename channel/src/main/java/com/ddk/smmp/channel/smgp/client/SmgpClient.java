@@ -103,11 +103,11 @@ public class SmgpClient implements Client {
 										}
 										
 						                try {
-						                	Thread.sleep(5 * 1000);
+						                	Thread.sleep(55 * 1000);
 						                    ConnectFuture future = connector.connect();  
 						                    future.awaitUninterruptibly();// 等待连接创建成功
 						                    session = future.getSession();// 获取会话 
-						                    Thread.sleep(1000);
+						                    Thread.sleep(5000);
 						                    if (session.isConnected() && null != session.getAttribute("isSend")) {
 						                    	ChannelCacheUtil.put("client", "channel_" + channel.getId(), channel.getClient());
 						                    	
