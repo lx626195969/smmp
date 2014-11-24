@@ -85,23 +85,23 @@ public class SmsiServer {
 		/**=============================splitline=============================*/
 		
 		/**=============================splitline=============================*/
-		phoneRecordsThreadPool = new ScheduledThreadPoolExecutor(1);
-		phoneRecordsThreadPool.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				DatabaseTransaction trans = new DatabaseTransaction(true);
-				try {
-					int rows = new DbService(trans).deletePhoneRecords(Integer.parseInt(CacheUtil.get("DOUBLE_PHONE_FILTER_LIMIT", "double.phone.filter.limit").toString()));
-					trans.commit();
-					logger.info("delete phone records[" + rows + "] ......");
-				} catch (Exception ex) {
-					trans.rollback();
-				} finally {
-					trans.close();
-				}
-			}
-		}, 0, 60 * 1, TimeUnit.SECONDS);
-		logger.info("running phoneRecords timing clean up thread......");
+//		phoneRecordsThreadPool = new ScheduledThreadPoolExecutor(1);
+//		phoneRecordsThreadPool.scheduleAtFixedRate(new Runnable() {
+//			@Override
+//			public void run() {
+//				DatabaseTransaction trans = new DatabaseTransaction(true);
+//				try {
+//					int rows = new DbService(trans).deletePhoneRecords(Integer.parseInt(CacheUtil.get("DOUBLE_PHONE_FILTER_LIMIT", "double.phone.filter.limit").toString()));
+//					trans.commit();
+//					logger.info("delete phone records[" + rows + "] ......");
+//				} catch (Exception ex) {
+//					trans.rollback();
+//				} finally {
+//					trans.close();
+//				}
+//			}
+//		}, 0, 60 * 1, TimeUnit.SECONDS);
+//		logger.info("running phoneRecords timing clean up thread......");
 		/**=============================splitline=============================*/
 		
 		/**=============================splitline=============================*/

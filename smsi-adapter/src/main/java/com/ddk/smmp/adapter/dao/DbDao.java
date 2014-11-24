@@ -30,11 +30,11 @@ public class DbDao extends DataAccess {
 	 * @return
 	 */
 	public List<UserMode> getAllUser() {
-		String sql = "SELECT id, logname, password, decryptKey, bindip FROM user WHERE state = 1";
+		String sql = "SELECT id, logname, password, decryptKey, bindip, filter_date FROM user WHERE state = 1";
 		return super.queryForList(sql, new ResultConverter<UserMode>() {
 			@Override
 			public UserMode convert(ResultSet rs) throws SQLException {
-				return new UserMode(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5));
+				return new UserMode(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getInt(6));
 			}
 		});
 	}
@@ -180,6 +180,7 @@ public class DbDao extends DataAccess {
 	 * @param uId
 	 * @param phones
 	 */
+	@Deprecated
 	public void insertPhoneRecords(int uId, String[] phones){
 		StringBuffer sql = new StringBuffer();
 		sql.append("INSERT INTO phone_records (uid, phone, time) VALUES ");
@@ -197,6 +198,7 @@ public class DbDao extends DataAccess {
 	 * 
 	 * @param time
 	 */
+	@Deprecated
 	public int deletePhoneRecords(int minute){
 		String sql = "DELETE FROM phone_records WHERE time < DATE_SUB(NOW(), INTERVAL " + minute + " MINUTE)";
 		return super.update(sql);

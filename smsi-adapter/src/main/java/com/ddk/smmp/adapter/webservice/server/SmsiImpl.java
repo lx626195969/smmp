@@ -14,8 +14,6 @@ import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import com.alibaba.fastjson.JSONObject;
 import com.ddk.smmp.adapter.dao.UserMode;
 import com.ddk.smmp.adapter.jdbc.database.DatabaseTransaction;
-import com.ddk.smmp.adapter.model.Deliver;
-import com.ddk.smmp.adapter.model.Report;
 import com.ddk.smmp.adapter.service.DbService;
 import com.ddk.smmp.adapter.submit_socket_client.SmsTransferClient;
 import com.ddk.smmp.adapter.utils.CacheUtil;
@@ -23,15 +21,12 @@ import com.ddk.smmp.adapter.utils.Constants;
 import com.ddk.smmp.adapter.web.SmsiServer;
 import com.ddk.smmp.adapter.webservice.entity.BalanceRequest;
 import com.ddk.smmp.adapter.webservice.entity.BalanceResponse;
-import com.ddk.smmp.adapter.webservice.entity.DeliverRequest;
-import com.ddk.smmp.adapter.webservice.entity.DeliverResponse;
-import com.ddk.smmp.adapter.webservice.entity.ReportRequest;
-import com.ddk.smmp.adapter.webservice.entity.ReportResponse;
 import com.ddk.smmp.adapter.webservice.entity.SubmitRequest;
 import com.ddk.smmp.adapter.webservice.entity.SubmitResponse;
 import com.ddk.smmp.adapter.webservice.entity.helper.Msg;
 import com.ddk.smmp.adapter.webservice.entity.helper.ProductBalance;
 import com.ddk.smmp.util.Base64;
+import com.ddk.smmp.util.MemCachedUtil;
 import com.ddk.smmp.util.PostKeyUtil;
 
 @javax.jws.WebService(serviceName = "smsi", portName = "smsiSOAP", targetNamespace = "http://www.sioo.cn/smsi/", wsdlLocation = "wsdl/smsi.wsdl", endpointInterface = "com.ddk.smmp.adapter.webservice.server.Smsi")
@@ -81,16 +76,16 @@ public class SmsiImpl implements Smsi {
 									SubmitResponse submitResponse = new SubmitResponse((null == res.getInteger("code") ? Constants.CODE_AUTH_ERROR : res.getInteger("code")), (StringUtils.isEmpty(res.getString("batch_num")) ? "" : res.getString("batch_num")), (StringUtils.isEmpty(res.getString("result")) ? "" : res.getString("result")));
 									
 									if(submitResponse.getCode() == 0){
-										//将号码加入到数据库【重号过滤使用】
-										DatabaseTransaction trans = new DatabaseTransaction(true);
-										try {
-											DbService dbService = new DbService(trans);
-											dbService.insertPhoneRecords(userMode.getId(), submitRequest.getPhones());
-											trans.commit();
-										} catch (Exception ex) {
-											trans.rollback();
-										} finally {
-											trans.close();
+										//将号码加入到memcached【重号过滤使用】
+										int uid = userMode.getId();
+										int filter_time = userMode.getFilterTime();
+										if(filter_time != 0){
+											for(String phone : submitRequest.getPhones()){
+												Integer record = MemCachedUtil.get(Integer.class, "phone_records", uid + "_" + phone);
+												if(null == record){
+													MemCachedUtil.set("phone_records", uid + "_" + phone, 0, filter_time * 60);
+												}
+											}
 										}
 									}
 									

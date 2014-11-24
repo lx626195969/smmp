@@ -82,6 +82,7 @@ public class DbService extends BaseService {
 	 * @param uId
 	 * @param phones
 	 */
+	@Deprecated
 	public void insertPhoneRecords(int uId, String[] phones){
 		DbDao dao = new DbDao(getConnection());
 		dao.insertPhoneRecords(uId, phones);
@@ -92,6 +93,7 @@ public class DbService extends BaseService {
 	 * 
 	 * @param time
 	 */
+	@Deprecated
 	public int deletePhoneRecords(int minute){
 		DbDao dao = new DbDao(getConnection());
 		return dao.deletePhoneRecords(minute);

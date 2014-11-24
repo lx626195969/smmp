@@ -10,6 +10,7 @@ public class UserMode {
 	private String pwd;// 数据库加密过的密码
 	private String key;//解密key
 	private String host;//接口绑定IP
+	private int filterTime;//用户重号过滤时间
 	
 	public String getKey() {
 		return key;
@@ -17,6 +18,14 @@ public class UserMode {
 
 	public void setKey(String key) {
 		this.key = key;
+	}
+	
+	public int getFilterTime() {
+		return filterTime;
+	}
+
+	public void setFilterTime(int filterTime) {
+		this.filterTime = filterTime;
 	}
 
 	public int getId() {
@@ -51,13 +60,14 @@ public class UserMode {
 		this.host = host;
 	}
 
-	public UserMode(int id, String userName, String pwd, String key, String host) {
+	public UserMode(int id, String userName, String pwd, String key, String host, int filterTime) {
 		super();
 		this.id = id;
 		this.userName = userName;
 		this.pwd = pwd;
 		this.key = key;
 		this.host = host;
+		this.filterTime = filterTime;
 	}
 
 	public UserMode() {

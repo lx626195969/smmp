@@ -15,13 +15,12 @@ import com.ddk.smmp.adapter.http.entity.SubmitResponse;
 import com.ddk.smmp.adapter.http.entity.helper.Body;
 import com.ddk.smmp.adapter.http.entity.helper.EMethod;
 import com.ddk.smmp.adapter.http.entity.helper.EMsgType;
-import com.ddk.smmp.adapter.jdbc.database.DatabaseTransaction;
-import com.ddk.smmp.adapter.service.DbService;
 import com.ddk.smmp.adapter.submit_socket_client.SmsTransferClient;
 import com.ddk.smmp.adapter.utils.CacheUtil;
 import com.ddk.smmp.adapter.utils.Constants;
 import com.ddk.smmp.adapter.utils.Tuple2;
 import com.ddk.smmp.util.Base64;
+import com.ddk.smmp.util.MemCachedUtil;
 import com.ddk.smmp.util.PostKeyUtil;
 
 /**
@@ -64,16 +63,16 @@ public class SubmitAciton extends BaseAction {
 					
 					if(null != json){
 						if(json.getInteger("code") == 0){
-							//将号码加入到数据库【重号过滤使用】
-							DatabaseTransaction trans = new DatabaseTransaction(true);
-							try {
-								DbService dbService = new DbService(trans);
-								dbService.insertPhoneRecords(tuple2.e1.getId(), request.getPhones());
-								trans.commit();
-							} catch (Exception ex) {
-								trans.rollback();
-							} finally {
-								trans.close();
+							//将号码加入到memcached【重号过滤使用】
+							int uid = tuple2.e1.getId();
+							int filter_time = tuple2.e1.getFilterTime();
+							if(filter_time != 0){
+								for(String phone : request.getPhones()){
+									Integer record = MemCachedUtil.get(Integer.class, "phone_records", uid + "_" + phone);
+									if(null == record){
+										MemCachedUtil.set("phone_records", uid + "_" + phone, 0, filter_time * 60);
+									}
+								}
 							}
 						}
 						
@@ -126,16 +125,16 @@ public class SubmitAciton extends BaseAction {
 					
 					if(null != json){
 						if(json.getInteger("code") == 0){
-							//将号码加入到数据库【重号过滤使用】
-							DatabaseTransaction trans = new DatabaseTransaction(true);
-							try {
-								DbService dbService = new DbService(trans);
-								dbService.insertPhoneRecords(tuple2.e1.getId(), request.getPhones());
-								trans.commit();
-							} catch (Exception ex) {
-								trans.rollback();
-							} finally {
-								trans.close();
+							//将号码加入到memcached【重号过滤使用】
+							int uid = tuple2.e1.getId();
+							int filter_time = tuple2.e1.getFilterTime();
+							if(filter_time != 0){
+								for(String phone : request.getPhones()){
+									Integer record = MemCachedUtil.get(Integer.class, "phone_records", uid + "_" + phone);
+									if(null == record){
+										MemCachedUtil.set("phone_records", uid + "_" + phone, 0, filter_time * 60);
+									}
+								}
 							}
 						}
 						
