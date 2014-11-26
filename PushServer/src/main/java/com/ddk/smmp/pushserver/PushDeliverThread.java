@@ -36,8 +36,6 @@ public class PushDeliverThread extends Thread {
 
 	@Override
 	public void run() {
-		System.out.println(PushServer.deliver_RunThreadNum.incrementAndGet());
-		
 		UserPushCfg cfg = CacheUtil.get(UserPushCfg.class, PushServer.USER_CACHE_KEY, deliverTuple.e1);
 		if(null != cfg){
 			while(deliverTuple.e2.size() > 0){
@@ -83,6 +81,6 @@ public class PushDeliverThread extends Thread {
 			}
 		}
 		
-		System.out.println(PushServer.deliver_RunThreadNum.decrementAndGet());
+		PushServer.deliver_RunThreadNum.decrementAndGet();
 	}
 }

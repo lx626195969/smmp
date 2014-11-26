@@ -74,23 +74,17 @@ public class PushServer {
 		}, 2, 60 * 1, TimeUnit.SECONDS);
 		logger.info("running user cache modify thread ......");
 		
-		lockAndWatchReport();
-		logger.info("running lockAndWatchReport thread ......");
-		
 		pushReport();
 		logger.info("running pushReport thread ......");
-		
-		lockAndWatchDeliver();
-		logger.info("running lockAndWatchReport thread ......");
 		
 		pushDeliver();
 		logger.info("running pushReport thread ......");
 	}
 	
 	/**
-	 * 锁定并抓取报告数据
+	 * 推送报告数据
 	 */
-	private static void lockAndWatchReport(){
+	private static void pushReport(){
 		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -123,8 +117,6 @@ public class PushServer {
 				
 				//抓取需要推送的报告
 				if(user_report_map.size() == 0 && report_RunThreadNum.intValue() == 0){
-					logger.info("抓取报告");
-					
 					DatabaseTransaction trans = new DatabaseTransaction(true);
 					try {
 						temp = new DbService(trans).getReports(idStr);
@@ -134,6 +126,8 @@ public class PushServer {
 					} finally {
 						trans.close();
 					}
+					
+					logger.info("抓取报告" + temp.size() + "条");
 					
 					if(temp.size() > 0){
 						for(Report report : temp){
@@ -151,6 +145,17 @@ public class PushServer {
 								user_report_map.put(uId, new Tuple3<Integer, BlockingQueue<Report>, BlockingQueue<Tuple2<Integer, String>>>(uId, blockingQueue, blockingQueue2));
 							}
 						}
+						
+						if(user_report_map.size() != 0){
+							logger.info("准备推送报告");
+							
+							for(Tuple3<Integer, BlockingQueue<Report>, BlockingQueue<Tuple2<Integer, String>>> reportTuple : user_report_map.values()){
+								report_RunThreadNum.incrementAndGet();
+								pushReportThreadPool.execute(new PushReportThread(reportTuple));
+							}
+							
+							user_report_map.clear();
+						}
 					}
 				}
 			}
@@ -158,31 +163,9 @@ public class PushServer {
 	}
 	
 	/**
-	 * 推送报告
+	 * 推送上行数据
 	 */
-	private static void pushReport(){
-		while (true) {
-			logger.info("准备推送报告");
-			if(user_report_map.size() != 0){
-				for(Tuple3<Integer, BlockingQueue<Report>, BlockingQueue<Tuple2<Integer, String>>> reportTuple : user_report_map.values()){
-					pushReportThreadPool.execute(new PushReportThread(reportTuple));
-				}
-				
-				user_report_map.clear();
-			}else{
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					logger.error(e.getMessage(), e.getCause());
-				}
-			}
-		}
-	}
-	
-	/**
-	 * 锁定并抓取上行数据
-	 */
-	private static void lockAndWatchDeliver(){
+	private static void pushDeliver(){
 		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -215,8 +198,6 @@ public class PushServer {
 				
 				//抓取需要推送的上行
 				if(user_deliver_map.size() == 0 && deliver_RunThreadNum.intValue() == 0){
-					logger.info("抓取上行");
-					
 					DatabaseTransaction trans = new DatabaseTransaction(true);
 					try {
 						temp = new DbService(trans).getDelivers(idStr);
@@ -226,6 +207,8 @@ public class PushServer {
 					} finally {
 						trans.close();
 					}
+					
+					logger.info("抓取上行" + temp.size() + "条");
 					
 					if(temp.size() > 0){
 						for(Deliver deliver : temp){
@@ -243,32 +226,21 @@ public class PushServer {
 								user_deliver_map.put(uId, new Tuple3<Integer, BlockingQueue<Deliver>, BlockingQueue<Integer>>(uId, blockingQueue, blockingQueue2));
 							}
 						}
+						
+						if(user_deliver_map.size() != 0){
+							logger.info("准备推送上行");
+							
+							for(Tuple3<Integer, BlockingQueue<Deliver>, BlockingQueue<Integer>> deliverTuple : user_deliver_map.values()){
+								deliver_RunThreadNum.incrementAndGet();
+								pushDelivThreadPool.execute(new PushDeliverThread(deliverTuple));
+							}
+							
+							user_deliver_map.clear();
+						}
 					}
 				}
 			}
 		}, 5000, 5000, TimeUnit.MILLISECONDS);
-	}
-	
-	/**
-	 * 推送上行
-	 */
-	private static void pushDeliver(){
-		while (true) {
-			logger.info("准备推送上行");
-			if(user_deliver_map.size() != 0){
-				for(Tuple3<Integer, BlockingQueue<Deliver>, BlockingQueue<Integer>> deliverTuple : user_deliver_map.values()){
-					pushDelivThreadPool.execute(new PushDeliverThread(deliverTuple));
-				}
-				
-				user_deliver_map.clear();
-			}else{
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					logger.error(e.getMessage(), e.getCause());
-				}
-			}
-		}
 	}
 	
 	/**

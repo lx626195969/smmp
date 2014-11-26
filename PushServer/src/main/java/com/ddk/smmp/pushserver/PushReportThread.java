@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -12,7 +11,6 @@ import java.util.concurrent.BlockingQueue;
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
-import com.ddk.smmp.pushserver.dao.Deliver;
 import com.ddk.smmp.pushserver.dao.Report;
 import com.ddk.smmp.pushserver.dao.Tuple2;
 import com.ddk.smmp.pushserver.dao.Tuple3;
@@ -39,8 +37,6 @@ public class PushReportThread extends Thread {
 
 	@Override
 	public void run() {
-		System.out.println(PushServer.report_RunThreadNum.incrementAndGet());
-		
 		UserPushCfg cfg = CacheUtil.get(UserPushCfg.class, PushServer.USER_CACHE_KEY, reportTuple.e1);
 		if(null != cfg){
 			while(reportTuple.e2.size() > 0){
@@ -86,47 +82,47 @@ public class PushReportThread extends Thread {
 			}
 		}
 		
-		System.out.println(PushServer.report_RunThreadNum.decrementAndGet());
+		PushServer.report_RunThreadNum.decrementAndGet();
 	}
 	
 	public static void main(String[] args) {
-		List<Report> reportList = new LinkedList<Report>();
-		Report report1 = new Report(1, 17, "20141110155520001", "15214388466", "DELIVRD", "2014-11-10 15:56:12", "message_submit_1110");
-		Report report2 = new Report(2, 17, "20141110155520002", "15214388466", "DELIVRD", "2014-11-10 15:56:12", "message_submit_1110");
-		Report report3 = new Report(3, 17, "20141110155520003", "15214388466", "DELIVRD", "2014-11-10 15:56:12", "message_submit_1110");
-		reportList.add(report1);
-		reportList.add(report2);
-		reportList.add(report3);
-		
-		String pushUrl = "http://210.5.152.30:9100/ch_webMo/ddk7_mr";
-		HttpClient httpClient = new HttpClient();
-		Map<String, String> params = new HashMap<String, String>();
-		try {
-			params.put("args", URLEncoder.encode(JSON.toJSONString(reportList), "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		Object resp = httpClient.post(pushUrl, params, "UTF-8");
-		System.out.println(resp);
-		
-		List<Deliver> deliverList = new ArrayList<Deliver>();
-		Deliver deliver1 = new Deliver(1, 17, "15214388466", "测试上行1", "2014-11-10 15:56:12");
-		Deliver deliver2 = new Deliver(2, 17, "15214388467", "测试上行2", "2014-11-10 15:56:12");
-		Deliver deliver3 = new Deliver(3, 17, "15214388468", "测试上行3", "2014-11-10 15:56:12");
-		deliverList.add(deliver1);
-		deliverList.add(deliver2);
-		deliverList.add(deliver3);
-		
-		String pushUrl1 = "http://210.5.152.30:9100/ch_webMo/ddk7_mo";
-		HttpClient httpClient1 = new HttpClient();
-		Map<String, String> params1 = new HashMap<String, String>();
-		try {
-			params1.put("args", URLEncoder.encode(JSON.toJSONString(deliverList), "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		Object resp1 = httpClient1.post(pushUrl1, params1, "UTF-8");
-		System.out.println(resp1);
+//		List<Report> reportList = new LinkedList<Report>();
+//		Report report1 = new Report(1, 17, "20141110155520001", "15214388466", "DELIVRD", "2014-11-10 15:56:12", "message_submit_1110");
+//		Report report2 = new Report(2, 17, "20141110155520002", "15214388466", "DELIVRD", "2014-11-10 15:56:12", "message_submit_1110");
+//		Report report3 = new Report(3, 17, "20141110155520003", "15214388466", "DELIVRD", "2014-11-10 15:56:12", "message_submit_1110");
+//		reportList.add(report1);
+//		reportList.add(report2);
+//		reportList.add(report3);
+//		
+//		String pushUrl = "http://210.5.152.30:9100/ch_webMo/ddk7_mr";
+//		HttpClient httpClient = new HttpClient();
+//		Map<String, String> params = new HashMap<String, String>();
+//		try {
+//			params.put("args", URLEncoder.encode(JSON.toJSONString(reportList), "UTF-8"));
+//		} catch (UnsupportedEncodingException e) {
+//			e.printStackTrace();
+//		}
+//		Object resp = httpClient.post(pushUrl, params, "UTF-8");
+//		System.out.println(resp);
+//		
+//		List<Deliver> deliverList = new ArrayList<Deliver>();
+//		Deliver deliver1 = new Deliver(1, 17, "15214388466", "测试上行1", "2014-11-10 15:56:12");
+//		Deliver deliver2 = new Deliver(2, 17, "15214388467", "测试上行2", "2014-11-10 15:56:12");
+//		Deliver deliver3 = new Deliver(3, 17, "15214388468", "测试上行3", "2014-11-10 15:56:12");
+//		deliverList.add(deliver1);
+//		deliverList.add(deliver2);
+//		deliverList.add(deliver3);
+//		
+//		String pushUrl1 = "http://210.5.152.30:9100/ch_webMo/ddk7_mo";
+//		HttpClient httpClient1 = new HttpClient();
+//		Map<String, String> params1 = new HashMap<String, String>();
+//		try {
+//			params1.put("args", URLEncoder.encode(JSON.toJSONString(deliverList), "UTF-8"));
+//		} catch (UnsupportedEncodingException e) {
+//			e.printStackTrace();
+//		}
+//		Object resp1 = httpClient1.post(pushUrl1, params1, "UTF-8");
+//		System.out.println(resp1);
 		
 //		BlockingQueue<Report> blockingQueue = new LinkedBlockingQueue<Report>();
 //		BlockingQueue<Integer> blockingQueue2 = new LinkedBlockingQueue<Integer>();
