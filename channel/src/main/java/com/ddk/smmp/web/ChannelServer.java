@@ -22,7 +22,7 @@ import com.ddk.smmp.thread.RunChannelTimer;
  */
 public class ChannelServer {
 	static{
-		DOMConfigurator.configure(Class.class.getClass().getResource("/").getPath() + "log4j.xml");
+		DOMConfigurator.configureAndWatch(Class.class.getClass().getResource("/").getPath() + "log4j.xml");
 	}
 	
 	private static final Logger logger = Logger.getLogger(ChannelServer.class);
