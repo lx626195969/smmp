@@ -1,17 +1,15 @@
-package com.ddk.smmp.channel.jiaying_http.handler;
+package com.ddk.smmp.channel.liancheng_http.handler;
 
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
-import com.ddk.smmp.channel.jiaying_http.utils.Tools;
+import com.ddk.smmp.channel.liancheng_http.utils.Tools;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
 import com.ddk.smmp.log4j.ChannelLog;
@@ -36,6 +34,7 @@ public class SubmitChildThread extends Thread {
 		this.channel = channel;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void run() {
 		String encode = "GBK";
@@ -44,32 +43,29 @@ public class SubmitChildThread extends Thread {
 		
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
-		//List<SmtDelivVo> smtDelivVos = new LinkedList<SmtDelivVo>();
 		
 		for(int i = 0; i < queueList.size(); i++){
-			Integer msgId = Tools.generateSeq();
-			
 			SmQueue queue = queueList.get(i);
 			
 			HttpClient httpClient = new HttpClient();
 			Map<String, String> paramMap = new HashMap<String, String>();
-			paramMap.put("uid", channel.getAccount());
-			paramMap.put("psw", DigestUtils.md5Hex(channel.getPassword()));
-			paramMap.put("mobiles", queue.getPhone());
-			paramMap.put("msg", queue.getContent());
-			paramMap.put("cmd", "send");
-			paramMap.put("msgid", msgId + "");
-			
-			ChannelLog.log(
-					logger,
-					"send msg:uid=" + paramMap.get("uid") + ";psw="
-							+ paramMap.get("psw") + ";mobiles="
-							+ paramMap.get("mobiles") + ";msg="
-							+ paramMap.get("msg") + ";msgid="
-							+ paramMap.get("msgid") + ";",
-					LevelUtils.getSucLevel(channel.getId()));
+			paramMap.put("msgFormat", "1");
+			paramMap.put("corpID", channel.getCompanyCode());
+			paramMap.put("loginName", channel.getAccount());
+			paramMap.put("password", channel.getPassword());
+			paramMap.put("Mobs", queue.getPhone());
+			paramMap.put("msg",  URLEncoder.encode(queue.getContent()));
+			paramMap.put("mtLevel", "1");
+			paramMap.put("subNumber", queue.getSendCode());
+			paramMap.put("linkID", "");
+			paramMap.put("kindFlag", "");
+			paramMap.put("MD5str", "");
 
-			Object obj = httpClient.get(channel.getSubmitUrl(), paramMap, encode);
+			ChannelLog.log(logger, "send msg:Mobs=" + paramMap.get("Mobs")
+					+ ";msg=" + queue.getContent() + ";",
+					LevelUtils.getSucLevel(channel.getId()));
+			
+			Object obj = httpClient.get(channel.getSubmitUrl() + "/putMt/", paramMap, encode);
 			
 			//拼接队列ID串 用于后面批量删除队列
 			idStringBuffer.append(queue.getId());
@@ -79,20 +75,23 @@ public class SubmitChildThread extends Thread {
 			
 			ChannelLog.log(logger, "recv msg:" + obj, LevelUtils.getSucLevel(channel.getId()));
 			
-			String state = "MT:0";
+			Integer seq = Tools.generateSeq();
+			Long msgId = -1l;
+			String state = "MT:0";//默认成功
 			if(null != obj){
-				if(!"100".equals(obj.toString())){
-					state = "MT:1:" + obj.toString();
+				String[] resultArray = obj.toString().split("\r\n|\n|\r");
+				if(resultArray.length > 0 && resultArray[0].equals("100")){
+					String[] msgStrArray = resultArray[1].split(",");
+					msgId = Long.parseLong(msgStrArray[1]);
+				}else{
+					state = "MT:1:" + resultArray[0];
 				}
 			}else{
-				state = "MT:1:408";//代表没给响应
+				state = "MT:1:408";//代表未给响应
 			}
-			
-			submitVos.add(new SubmitVo(queue.getId(), msgId, channel.getId()));
-			//smtDelivVos.add(new SmtDelivVo(submitRsp.getTaskID(), queue.getNum(), channel.getId()));
-			
+			submitVos.add(new SubmitVo(queue.getId(), seq, channel.getId()));
 			for(int j = 1;j <= queue.getNum(); j++){
-				submitRspVos.add(new SubmitRspVo(msgId, queue.getId(), msgId, channel.getId(), state));
+				submitRspVos.add(new SubmitRspVo(seq, queue.getId(), msgId, channel.getId(), state));
 			}
 		}
 		
@@ -100,22 +99,5 @@ public class SubmitChildThread extends Thread {
 			SmsCache.queue1.addAll(submitVos);
 			SmsCache.queue2.addAll(submitRspVos);
 		}
-	}
-	
-	/**
-     * 获取短信中的签名
-     * 
-     * @param content
-     * @return
-     */
-    public static String getSign(String content) {
-    	String sign = "";
-	    Pattern pattern = Pattern.compile("(?<=\\【)[^\\】]+");  
-	    Matcher matcher = pattern.matcher(content);
-	    while(matcher.find())
-	    {
-	    	sign = matcher.group();
-	    }
-	    return sign;
 	}
 }
