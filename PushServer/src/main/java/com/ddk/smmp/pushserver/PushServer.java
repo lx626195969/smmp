@@ -91,7 +91,7 @@ public class PushServer {
 				//锁定上次推送的报告数据
 				if(reportIdQueue.size() > 0){
 					List<Tuple2<Integer, String>> reportIdList = new ArrayList<Tuple2<Integer,String>>();
-					reportIdQueue.retainAll(reportIdList);
+					reportIdQueue.drainTo(reportIdList);
 					
 					DatabaseTransaction trans = new DatabaseTransaction(true);
 					try {
@@ -172,7 +172,7 @@ public class PushServer {
 				//锁定上次推送的上行数据
 				if(deliverIdQueue.size() > 0){
 					List<Integer> delivIdList = new ArrayList<Integer>();
-					deliverIdQueue.retainAll(delivIdList);
+					deliverIdQueue.drainTo(delivIdList);
 					
 					DatabaseTransaction trans = new DatabaseTransaction(true);
 					try {
