@@ -4,20 +4,23 @@ import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.Client;
-import com.ddk.smmp.channel.yuzhou_http.handler.SubmitThread;
-import com.ddk.smmp.channel.yuzhou_http.handler.YuZhou_HttpServer;
+import com.ddk.smmp.channel.jiaying_http.client.JiaYing_HttpClient;
+import com.ddk.smmp.channel.liancheng_http.handler.DeliverThread;
+import com.ddk.smmp.channel.liancheng_http.handler.ReportThread;
+import com.ddk.smmp.channel.liancheng_http.handler.SubmitThread;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.service.DbService;
 
 /**
- * @author leeson 2014年9月1日 上午10:23:23 li_mr_ceo@163.com <br>
  * 
+ * @author leeson 2014年11月3日 下午3:59:20 li_mr_ceo@163.com <br>
  */
 public class LianCheng_HttpClient implements Client {
-	private static final long serialVersionUID = -3705225141297223091L;
-	private static final Logger logger = Logger.getLogger(LianCheng_HttpClient.class);
+	private static final long serialVersionUID = -4959290410169810270L;
+
+	private static final Logger logger = Logger.getLogger(JiaYing_HttpClient.class);
 	
 	private Channel channel = null;
 
@@ -27,14 +30,25 @@ public class LianCheng_HttpClient implements Client {
 	}
 	
 	SubmitThread submitThread = null;
-	YuZhou_HttpServer yuZhou_HttpServer = null;
+	ReportThread reportThread = null;
+	DeliverThread deliverThread = null;
 	
 	@Override
 	public void start() {
 		if(null == submitThread){
 			submitThread = new SubmitThread(channel);
 			submitThread.start();
-			ChannelLog.log(logger, "启动联诚智胜提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			ChannelLog.log(logger, "启动联诚智胜短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
+		}
+		if(null == reportThread){
+			reportThread = new ReportThread(channel);
+			reportThread.start();
+			ChannelLog.log(logger, "启动联诚智胜报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
+		}
+		if(null == deliverThread){
+			deliverThread = new DeliverThread(channel);
+			deliverThread.start();
+			ChannelLog.log(logger, "启动联诚智胜上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
 		
 		DatabaseTransaction trans = new DatabaseTransaction(true);
@@ -49,29 +63,6 @@ public class LianCheng_HttpClient implements Client {
 		}
 		
 		channel.setStatus(Channel.RUN_STATUS);
-		
-		if(null == yuZhou_HttpServer){
-			yuZhou_HttpServer = new YuZhou_HttpServer(channel);
-			try {
-				ChannelLog.log(logger, "启动联诚智胜报告和上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
-				yuZhou_HttpServer.start();
-			} catch (Exception e) {
-				ChannelLog.log(logger, "启动联诚智胜报告和上行处理线程失败......" + e.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-			
-				DatabaseTransaction trans1 = new DatabaseTransaction(true);
-				try {
-					new DbService(trans1).updateChannelStatus(channel.getId(), 2);
-					trans1.commit();
-				} catch (Exception ex) {
-					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-					trans1.rollback();
-				} finally {
-					trans1.close();
-				}
-				
-				channel.setStatus(Channel.STOP_STATUS);
-			}
-		}
 	}
 
 	@Override
@@ -80,14 +71,13 @@ public class LianCheng_HttpClient implements Client {
 			submitThread.stop_();
 			ChannelLog.log(logger, "停止联诚智胜短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-		
-		if(null != yuZhou_HttpServer){
-			try {
-				yuZhou_HttpServer.stop();
-				ChannelLog.log(logger, "停止联诚智胜短信提交处理线程.....", LevelUtils.getSucLevel(channel.getId()));
-			} catch (Exception e) {
-				ChannelLog.log(logger, "停止联诚智胜短信提交处理线程......" + e.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-			}
+		if(null != reportThread){
+			reportThread.stop_();
+			ChannelLog.log(logger, "停止联诚智胜报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
+		}
+		if(null != deliverThread){
+			deliverThread.stop_();
+			ChannelLog.log(logger, "停止联诚智胜上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
 		
 		DatabaseTransaction trans = new DatabaseTransaction(true);

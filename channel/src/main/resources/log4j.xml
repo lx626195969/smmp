@@ -169,6 +169,48 @@
 			<param name="levelMax" value="12013" />
 		</filter>
 	</appender>
+	
+	<appender name="liancheng" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/liancheng.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11014" />
+			<param name="levelMax" value="11014" />
+		</filter>
+	</appender>
+	<appender name="lianchengErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/liancheng_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12014" />
+			<param name="levelMax" value="12014" />
+		</filter>
+	</appender>
+	
+	<appender name="guangdongSGIP" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/guangdongSGIP.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11015" />
+			<param name="levelMax" value="11015" />
+		</filter>
+	</appender>
+	<appender name="guangdongSGIPErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/guangdongSGIP_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12015" />
+			<param name="levelMax" value="12015" />
+		</filter>
+	</appender>
 	<!-- 根logger的设置 -->
 	<root>
 		<priority value="DEBUG" />
@@ -188,5 +230,9 @@
 		<appender-ref ref="yuzhoucmppErr" />
 		<appender-ref ref="zhejiang" />
 		<appender-ref ref="zhejiangErr" />
+		<appender-ref ref="liancheng" />
+		<appender-ref ref="lianchengErr" />
+		<appender-ref ref="guangdongSGIP" />
+		<appender-ref ref="guangdongSGIPErr" />
 	</root>
 </log4j:configuration>

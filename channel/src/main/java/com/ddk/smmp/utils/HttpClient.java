@@ -24,6 +24,7 @@ public class HttpClient {
 		httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(2000);
 		httpClient.getHttpConnectionManager().getParams().setBooleanParameter("http.tcp.nodelay", true);
 
+		System.out.println(url + "?" + map2Url(param, encode));
 		GetMethod method = new GetMethod(url + "?" + map2Url(param, encode));
 		
 		method.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);

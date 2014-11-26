@@ -266,4 +266,8 @@ public class Channel implements Serializable {
 		this.submitUrl = submitUrl;
 		this.isBatch = isBatch;
 	}
+	
+	public static void main(String[] args) {
+		System.out.println((int) Long.parseLong("3020001050"));
+	}
 }

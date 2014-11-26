@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.jdbc.database.DruidDatabaseConnectionPool;
 import com.ddk.smmp.service.DbService;
 
 /**
@@ -26,7 +27,7 @@ public class ChannelAdapter {
 		return adapter;
 	}
 	
-	/*public static void main(String[] args){
+	public static void main(String[] args){
 		try {
 			DruidDatabaseConnectionPool.startup();
 			
@@ -34,7 +35,7 @@ public class ChannelAdapter {
 			
 			DatabaseTransaction trans = new DatabaseTransaction(true);
 			try {
-				channel = new DbService(trans).getChannel(13);
+				channel = new DbService(trans).getChannel(15);
 				trans.commit();
 			} catch (Exception ex) {
 				trans.rollback();
@@ -47,7 +48,7 @@ public class ChannelAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}*/
+	}
 
 	/**
 	 * 启动通道
