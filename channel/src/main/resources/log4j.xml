@@ -14,7 +14,7 @@
 	</appender>
 
 	<!--定义全局日志 -->
-	<appender name="all" class="org.apache.log4j.RollingFileAppender">
+	<appender name="all" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/all.log" />
 		<param name="Append" value="true" />
 		<param name="MaxBackupIndex" value="10" />
