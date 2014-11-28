@@ -88,9 +88,9 @@ public class SubmitChildThread extends Thread {
 			}
 			
 			//将rid和seq关联 放入缓存
-			ChannelCacheUtil.put("channel_" + channel.getId() + "_seq_cache", Integer.parseInt(submit.getSequenceNumber1() + "" + submit.getSequenceNumber3()), queue.getId());
+			ChannelCacheUtil.put("channel_" + channel.getId() + "_seq_cache", submit.getSequenceNumber3(), queue.getId());
 			//添加消息到集合 便于后面做批处理
-			submitVos.add(new SubmitVo(queue.getId(), Integer.parseInt(submit.getSequenceNumber1() + "" + submit.getSequenceNumber3()), channel.getId()));
+			submitVos.add(new SubmitVo(queue.getId(), submit.getSequenceNumber3(), channel.getId()));
 		}
 		
 		if(submitVos.size() > 0){

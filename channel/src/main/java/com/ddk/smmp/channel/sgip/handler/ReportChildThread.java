@@ -34,7 +34,7 @@ public class ReportChildThread extends Thread {
 		List<DelivVo> delivVos = new LinkedList<DelivVo>();
 		
 		for(Report report : tempList){
-			long msgId = Long.parseLong(report.getSeq1() + "" + report.getSeq3());
+			long msgId = Long.parseLong(report.getSeq2() + "" + report.getSeq3());
 			
 			String state = (report.getState() == 0) ? "DELIVRD" : "EXPIRED";
 			

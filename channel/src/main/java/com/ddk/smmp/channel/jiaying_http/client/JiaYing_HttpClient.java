@@ -7,6 +7,7 @@ import com.ddk.smmp.channel.Client;
 import com.ddk.smmp.channel.jiaying_http.handler.DeliverThread;
 import com.ddk.smmp.channel.jiaying_http.handler.ReportThread;
 import com.ddk.smmp.channel.jiaying_http.handler.SubmitThread;
+import com.ddk.smmp.jdbc.database.DatabaseException;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
@@ -34,76 +35,58 @@ public class JiaYing_HttpClient implements Client {
 	
 	@Override
 	public void start() {
-		if(null == submitThread){
-			submitThread = new SubmitThread(channel);
-			submitThread.start();
-			ChannelLog.log(logger, "启动嘉盈短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
-		}
-		if(null == reportThread){
-			reportThread = new ReportThread(channel);
-			reportThread.start();
-			ChannelLog.log(logger, "启动嘉盈报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
-		}
-		if(null == deliverThread){
-			deliverThread = new DeliverThread(channel);
-			deliverThread.start();
-			ChannelLog.log(logger, "启动嘉盈上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
-		}
-		
-		DatabaseTransaction trans = new DatabaseTransaction(true);
 		try {
-			new DbService(trans).updateChannelStatus(channel.getId(), 1);
-			trans.commit();
-		} catch (Exception ex) {
-			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-			trans.rollback();
-		} finally {
-			trans.close();
-		}
-		
-		channel.setStatus(Channel.RUN_STATUS);
-	}
-
-	@Override
-	public void stop() {
-		if(null != submitThread){
-			submitThread.stop_();
-			ChannelLog.log(logger, "停止嘉盈短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
-		}
-		if(null != reportThread){
-			reportThread.stop_();
-			ChannelLog.log(logger, "停止嘉盈报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
-		}
-		if(null != deliverThread){
-			deliverThread.stop_();
-			ChannelLog.log(logger, "停止嘉盈上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
-		}
-		
-		DatabaseTransaction trans = new DatabaseTransaction(true);
-		try {
-			new DbService(trans).updateChannelStatus(channel.getId(), 2);
-			trans.commit();
-		} catch (Exception ex) {
-			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-			trans.rollback();
-		} finally {
-			trans.close();
-		}
-		
-		channel.setStatus(Channel.STOP_STATUS);
-	}
-
-	@Override
-	public Integer status() {
-		synchronized (channel) {
-			return channel.getStatus();
-		}
-	}
-
-	@Override
-	public Channel getChannel() {
-		synchronized (channel) {
-			return this.channel;
+			if(null == submitThread){
+				submitThread = new SubmitThread(channel);
+				submitThread.start();
+				ChannelLog.log(logger, "启动嘉盈短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			}
+			if(null == reportThread){
+				reportThread = new ReportThread(channel);
+				reportThread.start();
+				ChannelLog.log(logger, "启动嘉盈报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			}
+			if(null == deliverThread){
+				deliverThread = new DeliverThread(channel);
+				deliverThread.start();
+				ChannelLog.log(logger, "启动嘉盈上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			}
+			
+			DatabaseTransaction trans = new DatabaseTransaction(true);
+			try {
+				new DbService(trans).updateChannelStatus(channel.getId(), 1);
+				trans.commit();
+			} catch (Exception ex) {
+				ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()));
+				trans.rollback();
+			} finally {
+				trans.close();
+			}
+			
+			channel.setStatus(Channel.RUN_STATUS);
+			
+			//添加阻塞
+			while (true) {
+				Thread.sleep(10 * 1000);
+			}
+		} catch (DatabaseException e) {
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+		} catch (InterruptedException e) {
+			if(null != submitThread){
+				submitThread.stop_();
+				submitThread = null;
+				ChannelLog.log(logger, "停止嘉盈短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			}
+			if(null != reportThread){
+				reportThread.stop_();
+				reportThread = null;
+				ChannelLog.log(logger, "停止嘉盈报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			}
+			if(null != deliverThread){
+				deliverThread.stop_();
+				deliverThread = null;
+				ChannelLog.log(logger, "停止嘉盈上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			}
 		}
 	}
 }

@@ -35,12 +35,13 @@ public class SubmitResponseChildThread extends Thread {
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
 		
 		for(SubmitResp resp : tempList){
-			int seq = Integer.parseInt(resp.getSequenceNumber1() + "" + resp.getSequenceNumber3());
+			int seq = resp.getSequenceNumber3();
+			Long msgId = Long.parseLong(resp.getSequenceNumber2() + "" + resp.getSequenceNumber3());
 			
 			Integer rid = ChannelCacheUtil.get(Integer.class, "channel_" + channel.getId() + "_seq_cache", seq);
 			
 			if(null != rid){
-				submitRspVos.add(new SubmitRspVo(seq, rid, seq, channel.getId(), getState(resp.getResult())));
+				submitRspVos.add(new SubmitRspVo(seq, rid, msgId, channel.getId(), getState(resp.getResult())));
 			}else{
 				ChannelLog.log(logger, "未找到序列:" + seq, LevelUtils.getErrLevel(channel.getId()));
 			}

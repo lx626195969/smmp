@@ -1,18 +1,28 @@
 package com.ddk.smmp.web;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
 
+import com.ddk.smmp.channel.Channel;
+import com.ddk.smmp.channel.ChannelAdapter;
 import com.ddk.smmp.channel.ConstantUtils;
+import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.jdbc.database.DruidDatabaseConnectionPool;
+import com.ddk.smmp.log4j.ChannelLog;
+import com.ddk.smmp.log4j.LevelUtils;
+import com.ddk.smmp.service.DbService;
 import com.ddk.smmp.thread.AddSmsTimer;
 import com.ddk.smmp.thread.RunChannelTimer;
 
@@ -91,6 +101,43 @@ public class ChannelServer {
 				ConstantUtils.isPause = false;
 			}
 		}, e_date, 24 * 60 * 60 * 1000);
+
+		/* ============================================================== */
+		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				List<String> currentThreadNames = ChannelAdapter.findAllThreadNames();
+				
+				logger.error("当前通道线程数：" + currentThreadNames.size());
+				logger.error("详细：" + Arrays.toString(currentThreadNames.toArray()));
+				
+				for(String threadName : ChannelAdapter.CHANNEL_THREAD_NAME_LIST){
+					int channelId = Integer.parseInt(threadName.replaceAll("ChannelThread_", ""));
+					
+					if(!currentThreadNames.contains(threadName)){
+						Channel channel = null;
+						
+						DatabaseTransaction trans = new DatabaseTransaction(true);
+						try {
+							DbService dbService = new DbService(trans);
+							channel = dbService.getChannel(channelId);
+							dbService.addChannelLog(channelId, channel.getName(), "通道重连");
+							trans.commit();
+						} catch (Exception ex) {
+							trans.rollback();
+						} finally {
+							trans.close();
+						}
+						
+						ChannelLog.log(logger, "监听到" + threadName + "关闭, 通道[" + channel.getName() + "-" + channel.getId() + "]开始重连", LevelUtils.getSucLevel(channel.getId()));
+						
+						ChannelAdapter.getInstance().start(channel);
+					}
+				}
+			}
+		}, 0, 1 * 30, TimeUnit.SECONDS);
+		/* ============================================================== */
+		
 		/* ============================================================== */
 		RunChannelTimer runChannelTimer = new RunChannelTimer();
 		runChannelTimer.start();

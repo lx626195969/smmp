@@ -2,11 +2,9 @@ package com.ddk.smmp.channel.sgip.client;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
-import org.apache.log4j.Logger;
-
-
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.sgip.handler.SubmitResponseThread;
@@ -71,24 +69,7 @@ public class SgipClientIoHandler extends IoHandlerAdapter {
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		ChannelLog.log(logger, session.getId() + "> Session closed", LevelUtils.getSucLevel(channel.getId()));
-		
 		session.removeAttribute("isSend");//移除可发送标识
-		
-		channel.setStatus(Channel.STOP_STATUS);
-		
-		//更改状态为停止
-		DatabaseTransaction trans = new DatabaseTransaction(true);
-		try {
-			DbService dbService = new DbService(trans);
-			dbService.addChannelLog(channel.getId(), channel.getName(), "会话关闭");
-			dbService.updateChannelStatus(channel.getId(), 2);
-			trans.commit();
-		} catch (Exception ex) {
-			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-			trans.rollback();
-		} finally {
-			trans.close();
-		}
 	}
 
 	@Override
@@ -117,7 +98,6 @@ public class SgipClientIoHandler extends IoHandlerAdapter {
 				}
 				
 				channel.setStatus(Channel.RUN_STATUS);
-				channel.setReConnect(true);
 			} else {
 				session.close(true);
 			}

@@ -29,7 +29,7 @@ public class HttpClient {
 
 		GetMethod method = new GetMethod(url + "?" + map2Url(param, encode));
 		
-		method.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 2000);
+		method.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
 		if(StringUtils.isNotEmpty(encode)){
 			method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, encode);
 		}

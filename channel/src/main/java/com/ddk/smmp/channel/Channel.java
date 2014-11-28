@@ -38,7 +38,6 @@ public class Channel implements Serializable {
 	private Integer isBatch;//是否批量
 	
 	private Integer status = STOP_STATUS;
-	private boolean isReConnect = false;// 是否重连
 	private IoSession session = null;
 	private Client client = null;
 	
@@ -132,18 +131,6 @@ public class Channel implements Serializable {
 
 	public void setLocalPort(Integer localPort) {
 		this.localPort = localPort;
-	}
-
-	public boolean isReConnect() {
-		synchronized (this) {
-			return isReConnect;
-		}
-	}
-
-	public void setReConnect(boolean isReConnect) {
-		synchronized (this) {
-			this.isReConnect = isReConnect;
-		}
 	}
 
 	public Integer getType() {
@@ -268,6 +255,6 @@ public class Channel implements Serializable {
 	}
 	
 	public static void main(String[] args) {
-		System.out.println((int) Long.parseLong("3020001050"));
+		System.out.println( (int) Long.parseLong("3020001050"));
 	}
 }

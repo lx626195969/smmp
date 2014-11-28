@@ -7,7 +7,6 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 
 import com.ddk.smmp.channel.Channel;
-import com.ddk.smmp.channel.ChannelCacheUtil;
 import com.ddk.smmp.channel.smgp.handler.ActiveTestThread;
 import com.ddk.smmp.channel.smgp.handler.DeliverThread;
 import com.ddk.smmp.channel.smgp.handler.SubmitResponseThread;
@@ -74,8 +73,6 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 		// 启动ActiveTest链路心跳检测Thread
 		heartbeatThread = new ActiveTestThread(session, channel.getId());
 		heartbeatThread.start();
-		//将启动的线程加入缓存管理
-		ChannelCacheUtil.put("thread_" + channel.getId(), "heartbeatThread", heartbeatThread);
 		
 		session.resumeRead();//恢复读取
 	}
@@ -90,45 +87,30 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
-		channel.setStatus(Channel.STOP_STATUS);
-		
+		ChannelLog.log(logger, session.getId() + "> Session closed", LevelUtils.getSucLevel(channel.getId()));
 		session.removeAttribute("isSend");//移除可发送标识
-		
-		//更改状态为停止
-		DatabaseTransaction trans = new DatabaseTransaction(true);
-		try {
-			DbService dbService = new DbService(trans);
-			dbService.addChannelLog(channel.getId(), channel.getName(), "会话关闭");
-			dbService.updateChannelStatus(channel.getId(), 2);
-			trans.commit();
-		} catch (Exception ex) {
-			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-			
-			trans.rollback();
-		} finally {
-			trans.close();
-		}
 				
 		//关闭线程
 		if(null != heartbeatThread){
 			heartbeatThread.stop();
+			heartbeatThread = null;
+			ChannelLog.log(logger, "停止心跳处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
 		if(null != submitThread){
 			submitThread.stop_();
+			submitThread = null;
+			ChannelLog.log(logger, "停止短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
 		if(null != submitResponseThread){
 			submitResponseThread.stop_();
+			submitResponseThread = null;
+			ChannelLog.log(logger, "停止短信提交响应处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
 		if(null != deliverThread){
 			deliverThread.stop_();
+			deliverThread = null;
+			ChannelLog.log(logger, "停止短信上行和报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-
-		
-		//清除缓存
-		ChannelCacheUtil.clear("thread_" + channel.getId());
-		ChannelCacheUtil.clear("message_" + channel.getId());
-		
-		ChannelLog.log(logger, session.getId() + "> Session closed", LevelUtils.getSucLevel(channel.getId()));
 	}
 
 	@Override
@@ -158,25 +140,18 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 				}
 				
 				channel.setStatus(Channel.RUN_STATUS);
-				channel.setReConnect(true);
 				
 				//启动消息发送处理类
 				submitThread = new SubmitThread(channel);
 				submitThread.start();
-				//将启动的线程加入缓存管理
-				ChannelCacheUtil.put("thread_" + channel.getId(), "submitThread", submitThread);
 				
 				//启动发送响应处理类
 				submitResponseThread = new SubmitResponseThread(channel);
 				submitResponseThread.start();
-				//将响应处理线程加入缓存管理
-				ChannelCacheUtil.put("thread_" + channel.getId(), "submitResponseThread", submitResponseThread);
 				
 				//启动状态报告或者MT消息处理类
 				deliverThread = new DeliverThread(channel);
 				deliverThread.start();
-				//将状态报告处理线程加入缓存管理
-				ChannelCacheUtil.put("thread_" + channel.getId(), "deliverThread", deliverThread);
 			} else {
 				session.close(true);
 			}
