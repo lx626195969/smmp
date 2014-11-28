@@ -27,7 +27,7 @@ public class DeliverChildThread extends Thread {
 		this.channel = channel;
 		this.tempList = tempList;
 	}
-
+	
 	@Override
 	public void run() {
 		for(Deliver deliver : tempList){
@@ -42,7 +42,12 @@ public class DeliverChildThread extends Thread {
 					totle = contentBytes[4];
 				}
 				
-				new DbService(trans).processMo(channel.getId(), deliver.getSpNumber(), 1, deliver.getUserNumber(), deliver.getSm().getMessage(), index, totle);
+				String userNumber = deliver.getUserNumber();
+				if(userNumber.length() > 11){
+					userNumber = userNumber.substring(userNumber.length() - 11, userNumber.length());
+				}
+				
+				new DbService(trans).processMo(channel.getId(), deliver.getSpNumber(), 1, userNumber, deliver.getSm().getMessage(), index, totle);
 				
 				trans.commit();
 			} catch (Exception ex) {
