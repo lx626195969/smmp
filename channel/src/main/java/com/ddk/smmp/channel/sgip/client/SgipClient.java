@@ -58,21 +58,21 @@ public class SgipClient implements Client {
 			if(listener == null){
 				listener = new SgipListener(channel);
 				listener.start();
-				ChannelLog.log(logger, "启动联通端口监听处理程序......", LevelUtils.getSucLevel(channel.getId()));
+				ChannelLog.log(logger, "启动联通端口监听处理程序......\n\r", LevelUtils.getSucLevel(channel.getId()));
 			}
 			
 			//启动消息发送处理类
 			if(submitThread == null){
 				submitThread = new SubmitThread(channel);
 				submitThread.start();
-				ChannelLog.log(logger, "启动联通短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
+				ChannelLog.log(logger, "启动联通短信提交处理线程......\n\r", LevelUtils.getSucLevel(channel.getId()));
 			}
 			
 			//启动发送响应处理类
 			if(submitResponseThread == null){
 				submitResponseThread = new SubmitResponseThread(channel);
 				submitResponseThread.start();
-				ChannelLog.log(logger, "启动联通短信提交响应处理线程......", LevelUtils.getSucLevel(channel.getId()));
+				ChannelLog.log(logger, "启动联通短信提交响应处理线程......\n\r", LevelUtils.getSucLevel(channel.getId()));
 			}
 		} catch (IOException e) {
 			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());

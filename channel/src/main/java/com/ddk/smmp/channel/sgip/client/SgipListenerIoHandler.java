@@ -3,11 +3,9 @@ package com.ddk.smmp.channel.sgip.client;
 import java.io.IOException;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
-import org.apache.log4j.Logger;
-
-
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.ChannelCacheUtil;
@@ -79,38 +77,38 @@ public class SgipListenerIoHandler extends IoHandlerAdapter {
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		SgipMSG msg = (SgipMSG) message;
-			switch (msg.header.getCommandId()) {
-			case SgipConstant.CMD_BIND:
-				Bind bind = new Bind();
-				BindResp bindResp = (BindResp)bind.getResponse();
-				bindResp.setResult(0);
-				session.write(bindResp);
-				
-				break;
-			case SgipConstant.CMD_DELIVER:
-				Deliver deliver = (Deliver) msg;
-				
-				deliverThread.queue.offer(deliver);//将数据加入处理队列
-				
-				DeliverResp deliverResp = (DeliverResp)deliver.getResponse();
-				deliverResp.setResult(0);
-				session.write(deliverResp);
-				
-				break;
-			case SgipConstant.CMD_REPORT:
-				Report report = (Report) msg;
-				report.setReceiveDate(new Date(System.currentTimeMillis()));
-				reportThread.queue.offer(report);//将数据加入处理队列
-				
-				ReportResp reportResp = (ReportResp)report.getResponse();
-				reportResp.setResult(0);
-				session.write(reportResp);
-				
-				break;
-			default:
-				ChannelLog.log(logger, "Unexpected MSG received! MSG Header: " + msg.header.getData().getHexDump(), LevelUtils.getErrLevel(channel.getId()));
-				session.close(true);
-				break;
-			}
+		switch (msg.header.getCommandId()) {
+		case SgipConstant.CMD_BIND:
+			Bind bind = (Bind)msg;
+			BindResp bindResp = (BindResp)bind.getResponse();
+			bindResp.setResult(0);
+			session.write(bindResp);
+			
+			break;
+		case SgipConstant.CMD_DELIVER:
+			Deliver deliver = (Deliver) msg;
+			
+			deliverThread.queue.offer(deliver);//将数据加入处理队列
+			
+			DeliverResp deliverResp = (DeliverResp)deliver.getResponse();
+			deliverResp.setResult(0);
+			session.write(deliverResp);
+			
+			break;
+		case SgipConstant.CMD_REPORT:
+			Report report = (Report) msg;
+			report.setReceiveDate(new Date(System.currentTimeMillis()));
+			reportThread.queue.offer(report);//将数据加入处理队列
+			
+			ReportResp reportResp = (ReportResp)report.getResponse();
+			reportResp.setResult(0);
+			session.write(reportResp);
+			
+			break;
+		default:
+			ChannelLog.log(logger, "Unexpected MSG received! MSG Header: " + msg.header.getData().getHexDump(), LevelUtils.getErrLevel(channel.getId()));
+			session.close(true);
+			break;
+		}
 	}
 }

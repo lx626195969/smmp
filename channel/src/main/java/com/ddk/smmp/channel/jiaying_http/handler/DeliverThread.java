@@ -1,6 +1,8 @@
 package com.ddk.smmp.channel.jiaying_http.handler;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -9,10 +11,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.dao.MtVo;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
+import com.ddk.smmp.thread.SmsCache;
 import com.ddk.smmp.utils.HttpClient;
 
 /**
@@ -37,6 +39,8 @@ public class DeliverThread extends Thread {
 		receiveDataThreadPool.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
+				List<MtVo> mtVos = new LinkedList<MtVo>();
+				
 				HttpClient httpClient = new HttpClient();
 				Map<String, String> paramMap = new HashMap<String, String>();
 				paramMap.put("uid", channel.getAccount());
@@ -54,18 +58,13 @@ public class DeliverThread extends Thread {
 							String[] delivArray = resultArray[i].split("#");
 							String mobile = delivArray[2];
 							String content = delivArray[4];
-							DatabaseTransaction trans = new DatabaseTransaction(true);
-							try {
-								new DbService(trans).process_http_Mo(channel.getId(), mobile, content, channel.getAccount());
-								trans.commit();
-							} catch (Exception ex) {
-								ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-								trans.rollback();
-							} finally {
-								trans.close();
-							}
+							mtVos.add(new MtVo(2, channel.getId(), mobile, content, channel.getAccount()));
 						}
 					}
+				}
+				
+				if(mtVos.size() > 0){
+					SmsCache.queue4.addAll(mtVos);
 				}
 			}
 		}, 1000, 10 * 1000, TimeUnit.MILLISECONDS);

@@ -20,10 +20,9 @@ import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.dao.DelivVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.dao.MtVo;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
 import com.ddk.smmp.thread.SmsCache;
 
 /**
@@ -86,6 +85,8 @@ public class GuanYi_HttpServlet extends HttpServlet {
 			if(StringUtils.isNotEmpty(message)){ 
 				//上行消息
 				if(message.startsWith("0")){
+					List<MtVo> mtVos = new LinkedList<MtVo>();
+					
 					String[] messageArray = message.split(";");
 					for(String msg : messageArray){
 						String[] msgArray = msg.split(",");
@@ -105,16 +106,7 @@ public class GuanYi_HttpServlet extends HttpServlet {
 						}
 						
 						if(null != channel){
-							DatabaseTransaction trans = new DatabaseTransaction(true);
-							try {
-								new DbService(trans).process_http_Mo(channel.getId(), msgArray[1], content, channel.getAccount() + "#" + msgArray[2]);
-								trans.commit();
-							} catch (Exception ex) {
-								ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-								trans.rollback();
-							} finally {
-								trans.close();
-							}
+							mtVos.add(new MtVo(2, channel.getId(), msgArray[1], content, channel.getAccount() + "#" + msgArray[2]));
 							
 							ChannelLog.log(logger, "receive deliver:phone="
 									+ msgArray[1] + ";expid=" + msgArray[2]
@@ -122,6 +114,10 @@ public class GuanYi_HttpServlet extends HttpServlet {
 									+ ";",
 									LevelUtils.getSucLevel(channel.getId()));
 						}
+					}
+					
+					if(mtVos.size() > 0){
+						SmsCache.queue4.addAll(mtVos);
 					}
 				}else if
 				//报告消息

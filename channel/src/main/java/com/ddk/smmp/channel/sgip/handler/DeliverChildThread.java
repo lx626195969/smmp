@@ -1,15 +1,12 @@
 package com.ddk.smmp.channel.sgip.handler;
 
+import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.sgip.msg.Deliver;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
-import com.ddk.smmp.log4j.ChannelLog;
-import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
+import com.ddk.smmp.dao.MtVo;
+import com.ddk.smmp.thread.SmsCache;
 
 
 /**
@@ -17,8 +14,6 @@ import com.ddk.smmp.service.DbService;
  * 
  */
 public class DeliverChildThread extends Thread {
-	private static final Logger logger = Logger.getLogger(DeliverChildThread.class);
-	
 	List<Deliver> tempList = null;
 	Channel channel = null;
 	
@@ -30,32 +25,27 @@ public class DeliverChildThread extends Thread {
 	
 	@Override
 	public void run() {
+		List<MtVo> mtVos = new LinkedList<MtVo>();
+		
 		for(Deliver deliver : tempList){
-			//短信
-			DatabaseTransaction trans = new DatabaseTransaction(true);
-			try {
-				int index = 1;
-				int totle = 1;
-				if(deliver.getSm().isSuper()){
-					byte[] contentBytes = deliver.getSm().getData().getBuffer();
-					index = contentBytes[5];
-					totle = contentBytes[4];
-				}
-				
-				String userNumber = deliver.getUserNumber();
-				if(userNumber.length() > 11){
-					userNumber = userNumber.substring(userNumber.length() - 11, userNumber.length());
-				}
-				
-				new DbService(trans).processMo(channel.getId(), deliver.getSpNumber(), 1, userNumber, deliver.getSm().getMessage(), index, totle);
-				
-				trans.commit();
-			} catch (Exception ex) {
-				ChannelLog.log(logger, ex.getMessage(), LevelUtils.getSucLevel(channel.getId()), ex.getCause());
-				trans.rollback();
-			} finally {
-				trans.close();
+			int index = 1;
+			int totle = 1;
+			if(deliver.getSm().isSuper()){
+				byte[] contentBytes = deliver.getSm().getData().getBuffer();
+				index = contentBytes[5];
+				totle = contentBytes[4];
 			}
+			
+			String userNumber = deliver.getUserNumber();
+			if(userNumber.length() > 11){
+				userNumber = userNumber.substring(userNumber.length() - 11, userNumber.length());
+			}
+			
+			mtVos.add(new MtVo(2, channel.getId(), deliver.getSpNumber(), 1, userNumber, deliver.getSm().getMessage(), index, totle));
+		}
+		
+		if(mtVos.size() > 0){
+			SmsCache.queue4.addAll(mtVos);
 		}
 	}
 }

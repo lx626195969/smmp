@@ -69,15 +69,15 @@ public class ReportResp extends Response {
 
 	@Override
 	public String name() {
-		return "SGIP BindResp";
+		return "SGIP ReportResp";
 	}
 
 	@Override
 	public String dump() {
-		String rt = "\r\nBindResp******************************************"
+		String rt = "\r\nReportResp******************************************"
 				  + "\r\nresult:        " + result
 				  + "\r\nreserve:       " + reserve
-				  + "\r\n******************************************BindResp";
+				  + "\r\n******************************************ReportResp";
 		return rt;
 	}
 }

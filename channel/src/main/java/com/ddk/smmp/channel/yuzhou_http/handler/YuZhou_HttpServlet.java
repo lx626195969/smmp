@@ -18,10 +18,9 @@ import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.dao.DelivVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.dao.MtVo;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
 import com.ddk.smmp.thread.SmsCache;
 import com.ddk.smmp.utils.JaxbUtils;
 
@@ -107,16 +106,8 @@ public class YuZhou_HttpServlet extends HttpServlet {
 	        	
 	        	if(syncPacket.getType().intValue() == 1){
 	        		//上行
-	        		DatabaseTransaction trans = new DatabaseTransaction(true);
-					try {
-						new DbService(trans).process_http_Mo(channel.getId(), syncPacket.getMobile(), syncPacket.getMsg(), channel.getAccount() + "#" + syncPacket.getPort());
-						trans.commit();
-					} catch (Exception ex) {
-						ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-						trans.rollback();
-					} finally {
-						trans.close();
-					}
+	        		MtVo mtVo = new MtVo(2, channel.getId(), syncPacket.getMobile(), syncPacket.getMsg(), channel.getAccount() + "#" + syncPacket.getPort());
+	        		SmsCache.queue4.add(mtVo);
 	        	}
 	        	
 	        	if(syncPacket.getType().intValue() == 4){

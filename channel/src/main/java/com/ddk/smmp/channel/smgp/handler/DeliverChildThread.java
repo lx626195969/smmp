@@ -11,10 +11,9 @@ import org.apache.log4j.Logger;
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.smgp.msg.Deliver;
 import com.ddk.smmp.dao.DelivVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.dao.MtVo;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
 import com.ddk.smmp.thread.SmsCache;
 
 
@@ -37,6 +36,7 @@ public class DeliverChildThread extends Thread {
 	@Override
 	public void run() {
 		List<DelivVo> delivVos = new LinkedList<DelivVo>();
+		List<MtVo> mtVos = new LinkedList<MtVo>();
 		
 		for(Deliver deliver : tempList){
 			//状态报告
@@ -58,22 +58,16 @@ public class DeliverChildThread extends Thread {
 			}
 			//短信
 			else{
-				DatabaseTransaction trans = new DatabaseTransaction(true);
-				try {
-					new DbService(trans).processMo(channel.getId(), deliver.getDstTermId(), 3, deliver.getSrcTermId(), deliver.getContent(), deliver.getPknumber(), deliver.getPktotal());
-					trans.commit();
-				} catch (Exception ex) {
-					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-					
-					trans.rollback();
-				} finally {
-					trans.close();
-				}
+				mtVos.add(new MtVo(1, channel.getId(), deliver.getDstTermId(), 3, deliver.getSrcTermId(), deliver.getContent(), deliver.getPknumber(), deliver.getPktotal()));
 			}
 		}
 		
 		if(delivVos.size() > 0){
 			SmsCache.queue3.addAll(delivVos);
+		}
+		
+		if(mtVos.size() > 0){
+			SmsCache.queue4.addAll(mtVos);
 		}
 	}
 }

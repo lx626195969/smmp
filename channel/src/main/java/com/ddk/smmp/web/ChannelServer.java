@@ -128,10 +128,12 @@ public class ChannelServer {
 						} finally {
 							trans.close();
 						}
-						
-						ChannelLog.log(logger, "监听到" + threadName + "关闭, 通道[" + channel.getName() + "-" + channel.getId() + "]开始重连", LevelUtils.getSucLevel(channel.getId()));
-						
-						ChannelAdapter.getInstance().start(channel);
+						if(channel.getProtocolType() >= 1 && channel.getProtocolType() <= 4){
+							//直连通道才需要重连
+							ChannelLog.log(logger, "监听到" + threadName + "关闭, 通道[" + channel.getName() + "-" + channel.getId() + "]开始重连", LevelUtils.getSucLevel(channel.getId()));
+							
+							ChannelAdapter.getInstance().start(channel);
+						}
 					}
 				}
 			}

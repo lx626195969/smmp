@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.dao.DbDao;
 import com.ddk.smmp.dao.DelivVo;
+import com.ddk.smmp.dao.MtVo;
 import com.ddk.smmp.dao.SmtDelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
@@ -84,6 +85,7 @@ public class DbService extends BaseService {
 	 * @param phone
 	 * @param content
 	 */
+	@Deprecated
 	public void processMo(int galleryId, String destId, int spType, String phone, String content, int index, int totle){
 		DbDao dao = new DbDao(getConnection());
 		Object[] accessCodeInfo = dao.getAccessCodeInfo(destId, spType);
@@ -156,6 +158,7 @@ public class DbService extends BaseService {
 	 * @param content
 	 * @param port
 	 */
+	@Deprecated
 	public void process_http_Mo(int galleryId, String phone, String content, String port){
 		DbDao dao = new DbDao(getConnection());
 		Integer uId = dao.getUidByExpandCode(phone, galleryId);
@@ -280,6 +283,109 @@ public class DbService extends BaseService {
 	public void batchAddDeliv(List<DelivVo> list){
 		DbDao dao = new DbDao(getConnection());
 		dao.batchAddDeliv(list);
+	}
+	
+	/**
+	 * 批量添加上行短信
+	 * 
+	 * @param list
+	 */
+	public void batchAddMt(List<MtVo> list){
+		for(MtVo mt : list){
+			if(mt.getType() == 1){
+				//直连
+				DbDao dao = new DbDao(getConnection());
+				Object[] accessCodeInfo = dao.getAccessCodeInfo(mt.getPort(), mt.getSpType());
+				Integer uId = null;
+				if(null != accessCodeInfo){
+					String accessCode = accessCodeInfo[0].toString();
+					//int isExtend = Integer.parseInt(accessCodeInfo[1].toString());
+					int isPlus = Integer.parseInt(accessCodeInfo[2].toString());
+					String childCode = "";
+					String port = "";
+					
+					//目前srcId有以下几种结构
+					//1.通道 [是否拓展 为 是] [是否签名 为否]
+					//	接入号+3/5位用户标识  接入号+3/5位用户标识+自定义拓展
+					//2.通道 [是否拓展 为 是] [是否签名 为是]
+					//	接入号+3/5位用户标识+签名拓展
+					//3.通道 [是否拓展 为 否]
+					//	接入号
+					//其中用户标识 
+					//	渠道用户等于3位 为[100-399] 共300个
+					//	直客用户等于5位 为[40000-99999] 共6万个
+					if(isPlus == 1){
+						String str1 = mt.getPort().replace(accessCode, "");
+						
+						int num = Integer.parseInt(str1.charAt(0) + "");
+						if(num <= 3){
+							childCode = str1.substring(0, 3);
+						}else{
+							childCode = str1.substring(0, 5);
+						}
+						
+						uId = dao.getUidByExpandCode(childCode);
+						
+						port = str1;
+					}
+					
+					if(null == uId){
+						uId = dao.getUidByExpandCode(mt.getPhone(), mt.getChannelId());
+					}
+					
+					String uName = "";
+					String blackRule = "";
+					if(null != uId){
+						String result = dao.getUNameAndBlackRuleByUID(uId);
+						if(StringUtils.isNotEmpty(result)){
+							uName = result.split("#")[0];
+							blackRule = result.split("#")[1];
+						}
+					}
+					dao.addMessageReceived((null == uId ? 0 : uId), StringUtils.isEmpty(uName) ? "" : uName, mt.getPhone(), accessCode + "#" + port, mt.getContent(), mt.getIndex(), mt.getTotle());
+					
+					List<String> blackList = new ArrayList<String>();
+					if(null != uId){
+						CollectionUtils.addAll(blackList, blackRule.toUpperCase().split(","));
+						
+						if(blackList.contains(mt.getContent().toUpperCase())){
+							dao.addUserBlack(uId, mt.getPhone());
+						}else if(mt.getContent().equalsIgnoreCase("QX") || mt.getContent().equalsIgnoreCase("TD") || mt.getContent().equalsIgnoreCase("N") || mt.getContent().equalsIgnoreCase("0000") || mt.getContent().equalsIgnoreCase("000000")){
+							dao.addUserBlack(uId, mt.getPhone());
+						}
+					}
+				}
+			}
+			
+			if(mt.getType() == 2){
+				//http
+				DbDao dao = new DbDao(getConnection());
+				Integer uId = dao.getUidByExpandCode(mt.getPhone(), mt.getChannelId());
+					
+				if(null != uId){
+					String uName = "";
+					String blackRule = "";
+					
+					String result = dao.getUNameAndBlackRuleByUID(uId);
+					if(StringUtils.isNotEmpty(result)){
+						uName = result.split("#")[0];
+						blackRule = result.split("#")[1];
+					}
+					
+					dao.addMessageReceived(uId, StringUtils.isEmpty(uName) ? "" : uName, mt.getPhone(), mt.getPort(), mt.getContent(), 1, 1);
+					
+					List<String> blackList = new ArrayList<String>();
+					CollectionUtils.addAll(blackList, blackRule.toUpperCase().split(","));
+					
+					//是否加用户黑名单
+					if(blackList.contains(mt.getContent().toUpperCase())){
+						dao.addUserBlack(uId, mt.getPhone());
+					}else if(mt.getContent().equalsIgnoreCase("QX") || mt.getContent().equalsIgnoreCase("TD") || mt.getContent().equalsIgnoreCase("N") || mt.getContent().equalsIgnoreCase("0000") || mt.getContent().equalsIgnoreCase("000000")){
+						dao.addUserBlack(uId, mt.getPhone());
+					}
+				}
+			}
+		}
 	}
 	
 	/**

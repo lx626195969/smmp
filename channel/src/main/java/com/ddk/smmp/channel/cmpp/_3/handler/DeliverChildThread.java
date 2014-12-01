@@ -14,10 +14,9 @@ import com.ddk.smmp.channel.cmpp._3.helper.ByteBuffer;
 import com.ddk.smmp.channel.cmpp._3.msg.Deliver;
 import com.ddk.smmp.channel.cmpp._3.utils.Tools;
 import com.ddk.smmp.dao.DelivVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.dao.MtVo;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
 import com.ddk.smmp.thread.SmsCache;
 
 
@@ -40,6 +39,7 @@ public class DeliverChildThread extends Thread {
 	@Override
 	public void run() {
 		List<DelivVo> delivVos = new LinkedList<DelivVo>();
+		List<MtVo> mtVos = new LinkedList<MtVo>();
 		
 		for(Deliver deliver : tempList){
 			//状态报告
@@ -66,28 +66,23 @@ public class DeliverChildThread extends Thread {
 			}
 			//短信
 			else{
-				DatabaseTransaction trans = new DatabaseTransaction(true);
-				try {
-					int index = 1;
-					int totle = 1;
-					if(deliver.getSm().isSuper()){
-						byte[] contentBytes = deliver.getSm().getData().getBuffer();
-						index = contentBytes[5];
-						totle = contentBytes[4];
-					}
-					//保存上行消息到数据库
-					new DbService(trans).processMo(channel.getId(), deliver.getDstId(), 2, deliver.getSrcTermId(), deliver.getSm().getMessage(), index, totle);
-					trans.commit();
-				} catch (Exception ex) {
-					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-				} finally {
-					trans.close();
+				int index = 1;
+				int totle = 1;
+				if(deliver.getSm().isSuper()){
+					byte[] contentBytes = deliver.getSm().getData().getBuffer();
+					index = contentBytes[5];
+					totle = contentBytes[4];
 				}
+				
+				mtVos.add(new MtVo(1, channel.getId(), deliver.getDstId(), 2, deliver.getSrcTermId(), deliver.getSm().getMessage(), index, totle));
 			}
 		}
 		
 		if(delivVos.size() > 0){
 			SmsCache.queue3.addAll(delivVos);
+		}
+		if(mtVos.size() > 0){
+			SmsCache.queue4.addAll(mtVos);
 		}
 	}
 }

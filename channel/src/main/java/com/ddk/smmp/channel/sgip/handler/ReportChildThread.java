@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.sgip.msg.Report;
 import com.ddk.smmp.dao.DelivVo;
@@ -18,8 +16,6 @@ import com.ddk.smmp.thread.SmsCache;
  * 
  */
 public class ReportChildThread extends Thread {
-	private static final Logger logger = Logger.getLogger(ReportChildThread.class);
-	
 	List<Report> tempList = null;
 	Channel channel = null;
 	
