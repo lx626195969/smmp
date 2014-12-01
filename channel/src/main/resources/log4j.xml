@@ -211,6 +211,27 @@
 			<param name="levelMax" value="12015" />
 		</filter>
 	</appender>
+	
+	<appender name="buyun" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/buyun.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="11016" />
+			<param name="levelMax" value="11016" />
+		</filter>
+	</appender>
+	<appender name="buyunErr" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="./logs/buyun_err.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+		</layout>
+		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
+			<param name="levelMin" value="12016" />
+			<param name="levelMax" value="12016" />
+		</filter>
+	</appender>
 	<!-- 根logger的设置 -->
 	<root>
 		<priority value="DEBUG" />
@@ -234,5 +255,7 @@
 		<appender-ref ref="lianchengErr" />
 		<appender-ref ref="guangdongSGIP" />
 		<appender-ref ref="guangdongSGIPErr" />
+		<appender-ref ref="buyun" />
+		<appender-ref ref="buyunErr" />
 	</root>
 </log4j:configuration>

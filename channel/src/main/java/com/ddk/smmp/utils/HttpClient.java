@@ -70,7 +70,7 @@ public class HttpClient {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(method.getResponseBodyAsStream(), Charset.forName(encode)));
 				String line;
 				while ((line = reader.readLine()) != null) {
-					response.append(line);
+					response.append(line + "\r\n");
 				}
 				reader.close();
 				

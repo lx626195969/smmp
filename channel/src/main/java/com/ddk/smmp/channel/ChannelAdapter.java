@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
+import com.ddk.smmp.jdbc.database.DruidDatabaseConnectionPool;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.service.DbService;
@@ -31,6 +32,29 @@ public class ChannelAdapter {
 			adapter = new ChannelAdapter();
 		}
 		return adapter;
+	}
+	
+	public static void main(String[] args){
+		try {
+			DruidDatabaseConnectionPool.startup();
+			
+			Channel channel = null;
+			
+			DatabaseTransaction trans = new DatabaseTransaction(true);
+			try {
+				channel = new DbService(trans).getChannel(16);
+				trans.commit();
+			} catch (Exception ex) {
+				trans.rollback();
+			} finally {
+				trans.close();
+			}
+			
+			ChannelAdapter.getInstance().start(channel);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
