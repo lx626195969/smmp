@@ -50,26 +50,9 @@ public class BuYun_HttpServlet extends HttpServlet {
 	public void destroy() {
 		super.destroy();
 	}
-
+	
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html;charset=utf-8");
-		response.setCharacterEncoding("utf-8");
-		
-        PrintWriter out = response.getWriter();
-        out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-        out.println("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
-        out.println("<head>");
-        out.println("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />");
-        out.println("<title>Tips</title>");
-        out.println("<body>");
-        out.println("<h1>not support get request</h1>");
-        out.println("</body>");
-        out.println("</html>");
-	}
-
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html;charset=utf-8");
 		response.setCharacterEncoding("utf-8");
 		
@@ -150,5 +133,15 @@ public class BuYun_HttpServlet extends HttpServlet {
 	        out.println("</body>");
 	        out.println("</html>");
 		}
+	}
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		super.doGet(req, resp);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		super.doPost(request, response);
 	}
 }
