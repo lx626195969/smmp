@@ -1,6 +1,5 @@
 package com.ddk.smmp.channel.liancheng_http.handler;
 
-import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,7 +36,6 @@ public class SubmitChildThread extends Thread {
 		this.channel = channel;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void run() {
 		String encode = "GBK";
@@ -58,7 +56,7 @@ public class SubmitChildThread extends Thread {
 			paramMap.put("loginName", channel.getAccount());
 			paramMap.put("password", channel.getPassword());
 			paramMap.put("Mobs", queue.getPhone());
-			paramMap.put("msg",  URLEncoder.encode(queue.getContent()));
+			paramMap.put("msg",  queue.getContent());
 			paramMap.put("mtLevel", "1");
 			paramMap.put("subNumber", queue.getSendCode());
 			paramMap.put("linkID", "");
