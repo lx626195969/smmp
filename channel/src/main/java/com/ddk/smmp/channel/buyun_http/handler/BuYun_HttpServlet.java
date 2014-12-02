@@ -2,7 +2,6 @@ package com.ddk.smmp.channel.buyun_http.handler;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -29,7 +28,7 @@ public class BuYun_HttpServlet extends HttpServlet {
 	private static final long serialVersionUID = 1004028325830573310L;
 	
 	private static final Logger logger = Logger.getLogger(BuYun_HttpServlet.class);
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	private Channel channel = null;
 	
 	public BuYun_HttpServlet(Channel channel) {
@@ -68,11 +67,6 @@ public class BuYun_HttpServlet extends HttpServlet {
 				String mobile = request.getParameter("mobile");
 				if(StringUtils.isNotEmpty(msgid) && StringUtils.isNotEmpty(reportTime) && StringUtils.isNotEmpty(mobile)){
 					Date date = new Date();
-					try {
-						date = sdf.parse(reportTime);
-					} catch (ParseException e1) {
-						ChannelLog.log(logger, e1.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-					}
 					String time = sdf.format(date);
 					DelivVo delivVo = new DelivVo(Long.parseLong(msgid), channel.getId(), status, time);
 					ChannelLog.log(logger, "receive report:msgId=" + msgid + ";state=" + status + ";time=" + time + ";", LevelUtils.getSucLevel(channel.getId()));
@@ -99,11 +93,6 @@ public class BuYun_HttpServlet extends HttpServlet {
 				
 				if(StringUtils.isNotEmpty(msg) && StringUtils.isNotEmpty(destcode) && StringUtils.isNotEmpty(moTime) && StringUtils.isNotEmpty(mobile)){
 					Date date = new Date();
-					try {
-						date = sdf.parse(moTime);
-					} catch (ParseException e1) {
-						ChannelLog.log(logger, e1.getMessage(), LevelUtils.getErrLevel(channel.getId()));
-					}
 					String time = sdf.format(date);
 					MtVo mtVo = new MtVo(2, channel.getId(), mobile, msg, channel.getAccount() + "#" + destcode);
 					ChannelLog.log(logger, "receive deliver:phone=" + mobile + ";expid=" + destcode + ";content=" + msg + ";time=" + time + ";", LevelUtils.getSucLevel(channel.getId()));

@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.yuzhou_http.utils.Tools;
 import com.ddk.smmp.channel.yuzhou_http.utils.UrlConnection;
+import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
 import com.ddk.smmp.log4j.ChannelLog;
@@ -44,6 +45,7 @@ public class SubmitChildThread extends Thread {
 		
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
+		List<DelivVo> delivVos = new LinkedList<DelivVo>();
 		
 		String timestamp = DateUtils.dateToString(new Date(), "yyMMddHHmm");
 		String signature = DigestUtils.md5Hex(channel.getPassword() + timestamp);
@@ -74,19 +76,30 @@ public class SubmitChildThread extends Thread {
 			
 			Integer seq = Tools.generateSeq();
 			String state = "MT:1:408";//默认为未给响应
-			if(null != mtResponse || StringUtils.isNotEmpty(mtResponse.getResult())){
+			if(null != mtResponse && StringUtils.isNotEmpty(mtResponse.getResult())){
 				state = mtResponse.getResult().equals("0") ? "MT:0" : "MT:1:" + mtResponse.getResult();
 			}
 			
 			submitVos.add(new SubmitVo(queue.getId(), seq, channel.getId()));
 			for(int j = 1;j <= queue.getNum(); j++){
-				submitRspVos.add(new SubmitRspVo(seq, queue.getId(), queue.getId(), channel.getId(), state));
+				if(state.startsWith("MT:1:")){
+					//系统产生对应发送数量的MR:0008的状态报告
+					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), queue.getId(), channel.getId(), state));
+					delivVos.add(new DelivVo(queue.getId(), channel.getId(), "MR:0008", DateUtils.format(new Date(), "yyyyMMddHHmmss")));
+				}else{
+					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), queue.getId(), channel.getId(), state));
+				}
 			}
 		}
 		
 		if(submitVos.size() > 0){
 			SmsCache.queue1.addAll(submitVos);
+		}
+		if(submitRspVos.size() > 0){
 			SmsCache.queue2.addAll(submitRspVos);
+		}
+		if(delivVos.size() > 0){
+			SmsCache.queue3.addAll(delivVos);
 		}
 	}
 	

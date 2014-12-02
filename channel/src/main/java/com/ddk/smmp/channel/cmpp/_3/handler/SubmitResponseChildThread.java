@@ -1,5 +1,6 @@
 package com.ddk.smmp.channel.cmpp._3.handler;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -8,10 +9,12 @@ import org.apache.log4j.Logger;
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.ChannelCacheUtil;
 import com.ddk.smmp.channel.cmpp._3.msg.SubmitResp;
+import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.thread.SmsCache;
+import com.ddk.smmp.utils.DateUtils;
 
 
 /**
@@ -33,12 +36,19 @@ public class SubmitResponseChildThread extends Thread {
 	@Override
 	public void run() {
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
+		List<DelivVo> delivVos = new LinkedList<DelivVo>();
 		
 		for(SubmitResp resp : tempList){
 			//通过seq取出rid
 			Integer rid = ChannelCacheUtil.get(Integer.class, "channel_" + channel.getId() + "_seq_cache", resp.getSequenceNumber());
 			if(null != rid){
-				submitRspVos.add(new SubmitRspVo(resp.getSequenceNumber(), rid, resp.getMsgId(), channel.getId(), getState(resp.getResult())));
+				if(resp.getResult() != 0){
+					//系统产生对应发送数量的MR:0008的状态报告
+					submitRspVos.add(new SubmitRspVo(resp.getSequenceNumber(), rid, rid, channel.getId(), getState(resp.getResult())));
+					delivVos.add(new DelivVo(rid, channel.getId(), "MR:0008", DateUtils.format(new Date(), "yyyyMMddHHmmss")));
+				}else{
+					submitRspVos.add(new SubmitRspVo(resp.getSequenceNumber(), rid, resp.getMsgId(), channel.getId(), getState(resp.getResult())));
+				}
 			}else{
 				ChannelLog.log(logger, "未找到序列:" + resp.getSequenceNumber(), LevelUtils.getErrLevel(channel.getId()));
 			}
@@ -46,6 +56,9 @@ public class SubmitResponseChildThread extends Thread {
 		
 		if(submitRspVos.size() > 0){
 			SmsCache.queue2.addAll(submitRspVos);
+		}
+		if(delivVos.size() > 0){
+			SmsCache.queue3.addAll(delivVos);
 		}
 	}
 

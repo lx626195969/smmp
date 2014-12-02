@@ -1,5 +1,6 @@
 package com.ddk.smmp.channel.maiyuan_http.handler;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,12 +12,14 @@ import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.maiyuan_http.utils.Tools;
+import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.model.SmQueue;
 import com.ddk.smmp.thread.SmsCache;
+import com.ddk.smmp.utils.DateUtils;
 import com.ddk.smmp.utils.HttpClient;
 import com.ddk.smmp.utils.JaxbUtils;
 
@@ -44,6 +47,7 @@ public class SubmitChildThread extends Thread {
 		
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
+		List<DelivVo> delivVos = new LinkedList<DelivVo>();
 		//List<SmtDelivVo> smtDelivVos = new LinkedList<SmtDelivVo>();
 		
 		for(int i = 0; i < queueList.size(); i++){
@@ -85,7 +89,7 @@ public class SubmitChildThread extends Thread {
 			ChannelLog.log(logger, "recv msg:" + submitRsp, LevelUtils.getSucLevel(channel.getId()));
 			
 			Integer seq = Tools.generateSeq();
-			Long msgId = -1l;
+			Long msgId = Long.parseLong(queue.getId() + "");//默认msgId
 			String state = "MT:1:408";//默认代表未给响应
 			
 			if(null != submitRsp){
@@ -99,13 +103,25 @@ public class SubmitChildThread extends Thread {
 			//smtDelivVos.add(new SmtDelivVo(submitRsp.getTaskID(), queue.getNum(), channel.getId()));
 			
 			for(int j = 1;j <= queue.getNum(); j++){
-				submitRspVos.add(new SubmitRspVo(seq, queue.getId(), msgId, channel.getId(), state));
+				if(state.startsWith("MT:1:")){
+					//系统产生对应发送数量的MR:0008的状态报告
+					Long tempMsgId = Long.parseLong(msgId.toString() + j);
+					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), tempMsgId, channel.getId(), state));
+					delivVos.add(new DelivVo(tempMsgId, channel.getId(), "MR:0008", DateUtils.format(new Date(), "yyyyMMddHHmmss")));
+				}else{
+					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), msgId, channel.getId(), state));
+				}
 			}
 		}
 		
-		if(submitVos.size() > 0){
+		if (submitVos.size() > 0) {
 			SmsCache.queue1.addAll(submitVos);
+		}
+		if (submitRspVos.size() > 0) {
 			SmsCache.queue2.addAll(submitRspVos);
+		}
+		if (delivVos.size() > 0) {
+			SmsCache.queue3.addAll(delivVos);
 		}
 	}
 	

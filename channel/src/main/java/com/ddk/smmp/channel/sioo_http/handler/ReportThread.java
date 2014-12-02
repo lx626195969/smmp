@@ -14,8 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.dao.DelivVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
-import com.ddk.smmp.service.DbService;
+import com.ddk.smmp.thread.SmsCache;
 import com.ddk.smmp.utils.HttpClient;
 
 /**
@@ -74,16 +73,7 @@ public class ReportThread extends Thread {
 						}
 						
 						if(delivVos.size() > 0){
-							DatabaseTransaction trans = new DatabaseTransaction(true);
-							try {
-								//保存报告到数据库
-								new DbService(trans).batchAddDeliv(delivVos);
-								trans.commit();
-							} catch (Exception ex) {
-								trans.rollback();
-							} finally {
-								trans.close();
-							}
+							SmsCache.queue3.addAll(delivVos);
 						}
 					}
 				}

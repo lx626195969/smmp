@@ -1,5 +1,6 @@
 package com.ddk.smmp.channel.sioo_http.handler;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,13 +10,15 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
+
 import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.channel.sioo_http.utils.Tools;
+import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.model.SmQueue;
-import com.ddk.smmp.service.DbService;
+import com.ddk.smmp.thread.SmsCache;
+import com.ddk.smmp.utils.DateUtils;
 import com.ddk.smmp.utils.HttpClient;
 
 /**
@@ -42,6 +45,7 @@ public class SubmitChildThread extends Thread {
 		
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
+		List<DelivVo> delivVos = new LinkedList<DelivVo>();
 		
 		for(int i = 0; i < queueList.size(); i++){
 			SmQueue queue = queueList.get(i);
@@ -80,23 +84,20 @@ public class SubmitChildThread extends Thread {
 				}
 				submitVos.add(new SubmitVo(queue.getId(), seqOrMsgId, channel.getId()));
 				submitRspVos.add(new SubmitRspVo(seqOrMsgId, queue.getId(), seqOrMsgId, channel.getId(), getState(state)));
+				if(state != 0){
+					delivVos.add(new DelivVo(seqOrMsgId, channel.getId(), "MR:0008", DateUtils.format(new Date(), "yyyyMMddHHmmss")));
+				}
 			}
 		}
 		
 		if(submitVos.size() > 0){
-			//批量添加消息提交数据
-			DatabaseTransaction trans = new DatabaseTransaction(true);
-			try {
-				DbService service = new DbService(trans);
-				service.batchAddSubmit(submitVos);//保存提交消息
-				//service.batchDelQueue(channel.getId(), idStringBuffer.toString());//批量删除队列表记录
-				service.batchAddSubmitRsp(submitRspVos);
-				trans.commit();
-			} catch (Exception ex) {
-				trans.rollback();
-			} finally {
-				trans.close();
-			}
+			SmsCache.queue1.addAll(submitVos);
+		}
+		if(submitRspVos.size() > 0){
+			SmsCache.queue2.addAll(submitRspVos);
+		}
+		if(delivVos.size() > 0){
+			SmsCache.queue3.addAll(delivVos);
 		}
 	}
 	
