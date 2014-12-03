@@ -1,5 +1,7 @@
 package com.ddk.smmp.channel.liancheng_http.handler;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,9 +58,24 @@ public class DeliverThread extends Thread {
 					String[] resultArray = obj.toString().split("\r\n|\n|\r");
 					if(resultArray.length > 0 && resultArray[0].equals("100")){
 						for(int i = 1;i < resultArray.length; i++){
-							String[] delivArray = resultArray[i].split("#");
+							String[] delivArray = resultArray[i].split(",");
+							String format = delivArray[0];
 							String mobile = delivArray[3];
 							String content = delivArray[5];
+							
+							try {
+								if(format.equals("0")){
+									content = new String(content.getBytes("GBK"), "UTF-8");
+								}
+								if(format.equals("1")){
+									content = URLDecoder.decode(content, "GBK");
+								}
+								if(format.equals("3")){
+									content = new String(content.getBytes("UnicodeBigUnmarked"), "UTF-8");
+								}
+							} catch (UnsupportedEncodingException e) {
+								e.printStackTrace();
+							}
 							
 							mtVos.add(new MtVo(2, channel.getId(), mobile, content, channel.getAccount()));
 						}
@@ -79,5 +96,9 @@ public class DeliverThread extends Thread {
 		synchronized (this) {
 			receiveDataThreadPool.shutdown();
 		}
+	}
+	
+	public static void main(String[] args) {
+
 	}
 }

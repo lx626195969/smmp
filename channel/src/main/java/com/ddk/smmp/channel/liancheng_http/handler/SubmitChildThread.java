@@ -19,6 +19,7 @@ import com.ddk.smmp.model.SmQueue;
 import com.ddk.smmp.thread.SmsCache;
 import com.ddk.smmp.utils.DateUtils;
 import com.ddk.smmp.utils.HttpClient;
+import com.ddk.smmp.utils.MemCachedUtil;
 
 /**
  * 
@@ -60,6 +61,9 @@ public class SubmitChildThread extends Thread {
 			paramMap.put("mtLevel", "1");
 			paramMap.put("subNumber", queue.getSendCode());
 			paramMap.put("linkID", "");
+			if(queue.getNum().intValue() > 1){
+				paramMap.put("linkID", "2000");
+			}
 			paramMap.put("kindFlag", "");
 			paramMap.put("MD5str", "");
 
@@ -101,6 +105,11 @@ public class SubmitChildThread extends Thread {
 				}else{
 					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), msgId, channel.getId(), state));
 				}
+			}
+			
+			if(state.equals("MT:0")){
+				//添加数量缓存方便报告回来时 生成对应条数报告
+				MemCachedUtil.set("deliv_cache", channel.getId() + "_" + msgId, queue.getNum(), 3 * 24 * 60 * 60);
 			}
 		}
 		

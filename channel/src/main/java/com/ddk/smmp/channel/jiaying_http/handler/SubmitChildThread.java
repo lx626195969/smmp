@@ -93,7 +93,6 @@ public class SubmitChildThread extends Thread {
 			}
 			
 			submitVos.add(new SubmitVo(queue.getId(), msgId, channel.getId()));
-			//smtDelivVos.add(new SmtDelivVo(submitRsp.getTaskID(), queue.getNum(), channel.getId()));
 			
 			for(int j = 1;j <= queue.getNum(); j++){
 				if (state.startsWith("MT:1:")) {

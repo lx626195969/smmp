@@ -310,26 +310,6 @@ public class DbDao extends DataAccess {
 	}
 	
 	/**
-	 * 批量添加提交和报告关联消息（部分通道适用、比如迈远）
-	 * 
-	 * @param list
-	 */
-	public void batchAddSmtDeliv(List<SmtDelivVo> list){
-		if(list.size() > 0){
-			StringBuffer bufferSql = new StringBuffer("INSERT INTO sms_smt_deliv (rid, num, cid, time) VALUES ");
-			for(int i = 0; i < list.size(); i++){
-				SmtDelivVo smtDelivVo = list.get(i);
-				bufferSql.append("('" + smtDelivVo.getRid() + "', " + smtDelivVo.getNum() + ", " + smtDelivVo.getCid() + ", NOW())");
-				if(i != list.size() - 1){
-					bufferSql.append(",");
-				}
-			}
-			
-			super.update(bufferSql.toString());
-		}
-	}
-	
-	/**
 	 * 批量添加提交响应数据
 	 * 
 	 * @param list
@@ -350,23 +330,6 @@ public class DbDao extends DataAccess {
 			
 			//logger.info("批量插入提交响应" + list.size() + "条|耗时[" + (e - s) + "]");
 		}
-	}
-	
-	/**
-	 * 根据提交和报告关联ID和通道ID获取当时发送短信的条数（部分通道适用、比如迈远）
-	 * 
-	 * @param rid
-	 * @param cid
-	 * @return
-	 */
-	public Integer getNumByRidAndCid(String rid, int cid){
-		String sql = "SELECT num FROM sms_smt_deliv WHERE rid = '" + rid + "' AND cid = " + cid;
-		return super.queryForObject(sql, new ResultConverter<Integer>() {
-			@Override
-			public Integer convert(ResultSet rs) throws SQLException {
-				return rs.getInt("num");
-			}
-		});
 	}
 	
 	/**

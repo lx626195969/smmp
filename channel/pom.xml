@@ -130,6 +130,11 @@
             <artifactId>jetty-servlet</artifactId>  
             <version>8.1.1.v20120215</version>  
         </dependency>
+	  	<dependency>
+		  <groupId>com.alibaba.alisoft</groupId>
+		  <artifactId>alisoft-xplatform-asf-cache</artifactId>
+		  <version>2.5.1</version>
+		</dependency>
 	</dependencies>
 
 	<distributionManagement>

@@ -11,7 +11,6 @@ import com.ddk.smmp.channel.Channel;
 import com.ddk.smmp.dao.DbDao;
 import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.dao.MtVo;
-import com.ddk.smmp.dao.SmtDelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
 import com.ddk.smmp.jdbc.BaseService;
@@ -256,16 +255,6 @@ public class DbService extends BaseService {
 	}
 	
 	/**
-	 * 批量添加提交和报告关联消息（部分通道适用、比如迈远）
-	 * 
-	 * @param list
-	 */
-	public void batchAddSmtDeliv(List<SmtDelivVo> list){
-		DbDao dao = new DbDao(getConnection());
-		dao.batchAddSmtDeliv(list);
-	}
-	
-	/**
 	 * 批量添加提交响应数据
 	 * 
 	 * @param list
@@ -386,18 +375,6 @@ public class DbService extends BaseService {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * 根据提交和报告关联ID和通道ID获取当时发送短信的条数（部分通道适用、比如迈远）
-	 * 
-	 * @param rid
-	 * @param cid
-	 * @return
-	 */
-	public Integer getNumByRidAndCid(String rid, int cid){
-		DbDao dao = new DbDao(getConnection());
-		return dao.getNumByRidAndCid(rid, cid);
 	}
 	
 	/**

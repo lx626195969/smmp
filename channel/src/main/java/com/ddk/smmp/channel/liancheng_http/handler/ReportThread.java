@@ -17,6 +17,7 @@ import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.thread.SmsCache;
 import com.ddk.smmp.utils.HttpClient;
+import com.ddk.smmp.utils.MemCachedUtil;
 
 /**
  * 
@@ -42,7 +43,6 @@ public class ReportThread extends Thread {
 			@Override
 			public void run() {
 				List<DelivVo> delivVos = new LinkedList<DelivVo>();
-				
 				HttpClient httpClient = new HttpClient();
 				Map<String, String> paramMap = new HashMap<String, String>();
 				paramMap.put("corpID", channel.getCompanyCode());
@@ -62,9 +62,16 @@ public class ReportThread extends Thread {
 						for(int i = 1;i < resultArray.length; i++){
 							String[] reportArray = resultArray[i].split(",");
 							Long msgId = Long.parseLong(reportArray[0]);
-							String state = reportArray[2].equals("0") ? "DELIVRD" : "UNDELIV";
+							String state = reportArray[1].equals("0") ? "DELIVRD" : "UNDELIV";
 							
-							delivVos.add(new DelivVo(msgId, channel.getId(), state, time));
+							Integer delivNum = MemCachedUtil.get(Integer.class, "deliv_cache", channel.getId() + "_" + msgId);
+							if(delivNum == null){
+								delivNum = 1;
+							}
+							
+							for(int x = 0; x < delivNum; x++){
+								delivVos.add(new DelivVo(msgId, channel.getId(), state, time));
+							}
 						}
 						
 						if(delivVos.size() > 0){
