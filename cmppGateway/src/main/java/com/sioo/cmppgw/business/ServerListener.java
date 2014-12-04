@@ -9,6 +9,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,7 @@ public class ServerListener {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
 					@Override
                     protected void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new IdleStateHandler(0, 0, Integer.valueOf(configUtil.getConfig("idleSeconds"))));
+                        ch.pipeline().addLast(new IdleStateHandler(0, 0, Integer.valueOf(configUtil.getConfig("idleSeconds")), TimeUnit.SECONDS));
                         ch.pipeline().addLast(new CmppDecoder());
                         ch.pipeline().addLast(new CmppEncoder());
                         ch.pipeline().addLast(channelHandler);

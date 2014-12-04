@@ -78,10 +78,13 @@ public class DbDao extends DataAccess {
 	 * @param ids
 	 */
 	public void delReports(String ids){
-		String sql = "DELETE FROM sms_reports WHERE id IN(" + ids + ");";
-		
 		if(StringUtils.isNotEmpty(ids)){
-			super.update(sql);	
+			String[] idArray = ids.split(",");
+			String[] sqlArray = new String[idArray.length];
+			for(int i = 0;i < sqlArray.length;i++){
+				sqlArray[i] = "DELETE FROM sms_reports WHERE id = " + idArray[i] + ";";
+			}
+			super.batchUpdate(sqlArray);
 		}
 	}
 	
@@ -106,9 +109,13 @@ public class DbDao extends DataAccess {
 	 * @param ids
 	 */
 	public void modifyDelivState(String ids){
-		String sql = "UPDATE message_received SET is_deliv = 1 WHERE id IN(" + ids + ")";
 		if(StringUtils.isNotEmpty(ids)){
-			super.update(sql);	
+			String[] idArray = ids.split(",");
+			String[] sqlArray = new String[idArray.length];
+			for(int i = 0;i < sqlArray.length;i++){
+				sqlArray[i] = "UPDATE message_received SET is_deliv = 1 WHERE id " + idArray[i] + ";";
+			}
+			super.batchUpdate(sqlArray);
 		}
 	}
 }

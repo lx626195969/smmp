@@ -80,9 +80,15 @@ public class CmppServerHandler extends ChannelDuplexHandler {
         logger.info("" + "Cinet:【{}】 closed Connection!", ctx.channel().remoteAddress());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.warn("Handler 异常!,异常信息:{},连接关闭!", cause.getMessage());
+        
+		UserMode user = (UserMode)ctx.channel().attr(Constants.CURRENT_USER).get();//获取当前用户
+		if(null != user){
+			CacheUtil.remove(USER_SESSION_KEY, user.getId());
+		}
         ctx.close();
     }
 
@@ -168,8 +174,9 @@ public class CmppServerHandler extends ChannelDuplexHandler {
         }
     }
 
-    private void processActiveTest(ChannelHandlerContext ctx, ActiveTest activeTest) {
+	private void processActiveTest(ChannelHandlerContext ctx, ActiveTest activeTest) {
         logger.debug("Received heartbeats From:【{}】", ctx.channel().remoteAddress());
+        
         ActiveTestResp resp = new ActiveTestResp();
         resp.setReserved((byte) 0);
         resp.setSecquenceId(activeTest.getSecquenceId());
