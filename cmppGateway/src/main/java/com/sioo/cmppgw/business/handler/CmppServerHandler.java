@@ -351,7 +351,7 @@ public class CmppServerHandler extends ChannelDuplexHandler {
      * @return
      */
     @SuppressWarnings("unchecked")
-	private static boolean authClient(byte[] srcAddr, byte[] timestamp, byte[] clientAuthSrc, ChannelHandlerContext ctx){
+	private boolean authClient(byte[] srcAddr, byte[] timestamp, byte[] clientAuthSrc, ChannelHandlerContext ctx){
     	boolean state = false;
     	if(null != srcAddr && null != timestamp && null != clientAuthSrc){
     		try {
@@ -373,11 +373,17 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 										.channel().remoteAddress())
 										.getHostName().equals(
 												userMode.getBindIp()))) {
-							ctx.channel().attr(Constants.CURRENT_USER).set(userMode);
-							state = true;
+							
+							ChannelHandlerContext oldCtx = CacheUtil.get(ChannelHandlerContext.class, USER_SESSION_KEY, userMode.getId());
+							if(null != oldCtx){
+								logger.debug("WARN:user {} too many connect!", userMode.getUid());
+							}else{
+								ctx.channel().attr(Constants.CURRENT_USER).set(userMode);
+								state = true;
 
-							// 将用户Session加入缓存
-							CacheUtil.put(USER_SESSION_KEY, userMode.getId(), ctx);
+								// 将用户Session加入缓存
+								CacheUtil.put(USER_SESSION_KEY, userMode.getId(), ctx);
+							}
 						}
 					}
     	        }
