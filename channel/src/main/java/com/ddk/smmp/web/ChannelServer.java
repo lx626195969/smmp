@@ -108,7 +108,7 @@ public class ChannelServer {
 			public void run() {
 				List<String> currentThreadNames = ChannelAdapter.findAllThreadNames();
 				
-				logger.error("当前通道线程数：" + currentThreadNames.size());
+				logger.error("当前直连通道线程数：" + currentThreadNames.size());
 				logger.error("详细：" + Arrays.toString(currentThreadNames.toArray()));
 				
 				for(String threadName : ChannelAdapter.CHANNEL_THREAD_NAME_LIST){

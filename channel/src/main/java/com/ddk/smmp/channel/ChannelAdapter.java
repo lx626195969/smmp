@@ -150,7 +150,7 @@ public class ChannelAdapter {
 		
 		if(null != channel){
 			channel.setStatus(Channel.STOP_STATUS);
-			((Cmpp2_0Client)(channel.getClient())).stop();
+			channel.getClient().stop();
 			ConstantUtils.updateChannelStatus(channelId, 2);
 		}
 		

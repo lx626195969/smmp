@@ -1,6 +1,7 @@
 package com.sioo.cmppgw.business;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -48,8 +49,9 @@ public class ServerListener {
                     }
                 });
         try {
-            serverBootstrap.bind(Integer.parseInt(configUtil.getConfig("listenPort"))).sync();
-            logger.info("Server Start Success, Listning on Port:【{}】", configUtil.getConfig("listenPort"));
+        	ChannelFuture f = serverBootstrap.bind(Integer.parseInt(configUtil.getConfig("listenPort"))).sync();
+        	f.channel().closeFuture().sync();
+        	logger.info("Server Start Success, Listning on Port:【{}】", configUtil.getConfig("listenPort"));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

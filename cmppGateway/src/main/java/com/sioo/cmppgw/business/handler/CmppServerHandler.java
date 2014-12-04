@@ -127,6 +127,21 @@ public class CmppServerHandler extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         logger.info("Client idle time too long, close clinet:【{}】", ctx.channel().remoteAddress());
         ctx.close();
+//        /*心跳处理*/
+//        if (evt instanceof IdleStateEvent) {
+//            IdleStateEvent event = (IdleStateEvent) evt;
+//            if (event.state() == IdleState.READER_IDLE) {
+//                /*读超时*/
+//                System.out.println("READER_IDLE 读超时");
+//                ctx.disconnect();
+//            } else if (event.state() == IdleState.WRITER_IDLE) {
+//                /*写超时*/   
+//                System.out.println("WRITER_IDLE 写超时");
+//            } else if (event.state() == IdleState.ALL_IDLE) {
+//                /*总超时*/
+//                System.out.println("ALL_IDLE 总超时");
+//            }
+//        }
     }
     
 	@SuppressWarnings("unchecked")
