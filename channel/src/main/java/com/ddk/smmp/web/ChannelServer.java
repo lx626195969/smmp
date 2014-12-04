@@ -116,12 +116,9 @@ public class ChannelServer {
 					
 					if(!currentThreadNames.contains(threadName)){
 						Channel channel = null;
-						
 						DatabaseTransaction trans = new DatabaseTransaction(true);
 						try {
-							DbService dbService = new DbService(trans);
-							channel = dbService.getChannel(channelId);
-							dbService.addChannelLog(channelId, channel.getName(), "通道重连");
+							channel = new DbService(trans).getChannel(channelId);
 							trans.commit();
 						} catch (Exception ex) {
 							trans.rollback();
