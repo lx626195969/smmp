@@ -7,6 +7,7 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 
 import com.ddk.smmp.channel.Channel;
+import com.ddk.smmp.channel.ConstantUtils;
 import com.ddk.smmp.channel.cmpp._2.handler.ActiveTestThread;
 import com.ddk.smmp.channel.cmpp._2.handler.DeliverThread;
 import com.ddk.smmp.channel.cmpp._2.handler.SubmitResponseThread;
@@ -22,10 +23,8 @@ import com.ddk.smmp.channel.cmpp._2.msg.SubmitResp;
 import com.ddk.smmp.channel.cmpp._2.msg.Terminate;
 import com.ddk.smmp.channel.cmpp._2.msg.TerminateResp;
 import com.ddk.smmp.channel.cmpp._2.msg.parent.CmppMSG;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
 
 /**
  * 
@@ -39,11 +38,6 @@ public class CmppClientIoHandler extends IoHandlerAdapter {
 	public CmppClientIoHandler(Channel channel) {
 		this.channel = channel;
 	}
-	
-	SubmitThread submitThread = null;
-	SubmitResponseThread submitResponseThread = null;
-	ActiveTestThread heartbeatThread = null;
-	DeliverThread deliverThread = null;
 	
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
@@ -72,8 +66,8 @@ public class CmppClientIoHandler extends IoHandlerAdapter {
 		session.write(request);
 		
 		// 启动ActiveTest链路心跳检测Thread
-		heartbeatThread = new ActiveTestThread(session, channel.getId());
-		heartbeatThread.start();
+		((Cmpp2_0Client)(channel.getClient())).heartbeatThread = new ActiveTestThread(session, channel.getId());
+		((Cmpp2_0Client)(channel.getClient())).heartbeatThread.start();
 		
 		session.resumeRead();//恢复读取
 	}
@@ -92,25 +86,32 @@ public class CmppClientIoHandler extends IoHandlerAdapter {
 		session.removeAttribute("isSend");//移除可发送标识
 				
 		//关闭线程
-		if(null != heartbeatThread){
-			heartbeatThread.stop();
-			heartbeatThread = null;
+		if(null != ((Cmpp2_0Client)(channel.getClient())).heartbeatThread){
+			((Cmpp2_0Client)(channel.getClient())).heartbeatThread.stop();
+			((Cmpp2_0Client)(channel.getClient())).heartbeatThread = null;
 			ChannelLog.log(logger, "停止心跳处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-		if(null != submitThread){
-			submitThread.stop_();
-			submitThread = null;
+		
+		if(null != ((Cmpp2_0Client)(channel.getClient())).submitThread){
+			((Cmpp2_0Client)(channel.getClient())).submitThread.stop_();
+			((Cmpp2_0Client)(channel.getClient())).submitThread = null;
 			ChannelLog.log(logger, "停止短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-		if(null != submitResponseThread){
-			submitResponseThread.stop_();
-			submitResponseThread = null;
+		
+		if(null != ((Cmpp2_0Client)(channel.getClient())).submitResponseThread){
+			((Cmpp2_0Client)(channel.getClient())).submitResponseThread.stop_();
+			((Cmpp2_0Client)(channel.getClient())).submitResponseThread = null;
 			ChannelLog.log(logger, "停止短信提交响应处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-		if(null != deliverThread){
-			deliverThread.stop_();
-			deliverThread = null;
+		
+		if(null != ((Cmpp2_0Client)(channel.getClient())).deliverThread){
+			((Cmpp2_0Client)(channel.getClient())).deliverThread.stop_();
+			((Cmpp2_0Client)(channel.getClient())).deliverThread = null;
 			ChannelLog.log(logger, "停止短信上行和报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
+		}
+		
+		if(null != channel.getClient().connector){
+			channel.getClient().connector.dispose();
 		}
 	}
 
@@ -123,49 +124,38 @@ public class CmppClientIoHandler extends IoHandlerAdapter {
 			ConnectResp conrsp = (ConnectResp) msg;
 			
 			if (conrsp.getStatus() == 0) {
-				session.setAttribute("isSend", true);//设置可发送标识
+				//设置可发送标识
+				session.setAttribute("isSend", true);
 				
 				//更改状态为运行
-				DatabaseTransaction trans = new DatabaseTransaction(true);
-				try {
-					DbService dbService = new DbService(trans);
-					dbService.addChannelLog(channel.getId(), channel.getName(), "启动成功");
-					dbService.updateChannelStatus(channel.getId(), 1);
-					trans.commit();
-				} catch (Exception ex) {
-					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-					
-					trans.rollback();
-				} finally {
-					trans.close();
-				}
+				ConstantUtils.updateChannelStatus(channel.getId(), 1);
 				
 				channel.setStatus(Channel.RUN_STATUS);
 				
 				//启动消息发送处理类
-				submitThread = new SubmitThread(channel);
-				submitThread.start();
+				((Cmpp2_0Client)(channel.getClient())).submitThread = new SubmitThread(channel);
+				((Cmpp2_0Client)(channel.getClient())).submitThread.start();
 				
 				//启动发送响应处理类
-				submitResponseThread = new SubmitResponseThread(channel);
-				submitResponseThread.start();
+				((Cmpp2_0Client)(channel.getClient())).submitResponseThread = new SubmitResponseThread(channel);
+				((Cmpp2_0Client)(channel.getClient())).submitResponseThread.start();
 				
 				//启动状态报告或者MT消息处理类
-				deliverThread = new DeliverThread(channel);
-				deliverThread.start();
+				((Cmpp2_0Client)(channel.getClient())).deliverThread = new DeliverThread(channel);
+				((Cmpp2_0Client)(channel.getClient())).deliverThread.start();
 			} else {
 				session.close(true);
 			}
 			break;
 		case CmppConstant.CMD_ACTIVE_TEST_RESP:
-			heartbeatThread.setLastActiveTime(System.currentTimeMillis());//更改最后心跳时间等于当前时间
+			//更改最后心跳时间等于当前时间
+			((Cmpp2_0Client)(channel.getClient())).heartbeatThread.setLastActiveTime(System.currentTimeMillis());
 			break;
 		case CmppConstant.CMD_ACTIVE_TEST:
 			ActiveTest activeTest = (ActiveTest) msg;
 			ActiveTestResp activeTestResp = (ActiveTestResp) activeTest.getResponse();
 			session.write(activeTestResp);
 			break;
-			
 		case CmppConstant.CMD_TERMINATE:
 			Terminate terminate = (Terminate) msg;
 			
@@ -180,7 +170,8 @@ public class CmppClientIoHandler extends IoHandlerAdapter {
 		case CmppConstant.CMD_SUBMIT_RESP:
 			SubmitResp subresp = (SubmitResp) msg;
 			
-			submitResponseThread.queue.offer(subresp);//将数据加入处理队列
+			//将数据加入处理队列
+			((Cmpp2_0Client)(channel.getClient())).submitResponseThread.queue.offer(subresp);
 			
 			break;
 		case CmppConstant.CMD_DELIVER:
@@ -190,7 +181,8 @@ public class CmppClientIoHandler extends IoHandlerAdapter {
 			cmppDeliverResp.setMsgId(cmppDeliver.getMsgId());
 			session.write(cmppDeliverResp);
 			
-			deliverThread.queue.offer(cmppDeliver);//将数据加入处理队列
+			//将数据加入处理队列
+			((Cmpp2_0Client)(channel.getClient())).deliverThread.queue.offer(cmppDeliver);
 
 			break;
 		default:

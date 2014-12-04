@@ -10,10 +10,9 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.ddk.smmp.channel.cmpp._2.client.Cmpp2_0Client;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.jdbc.database.DruidDatabaseConnectionPool;
-import com.ddk.smmp.log4j.ChannelLog;
-import com.ddk.smmp.log4j.LevelUtils;
 import com.ddk.smmp.service.DbService;
 
 /**
@@ -42,7 +41,7 @@ public class ChannelAdapter {
 			
 			DatabaseTransaction trans = new DatabaseTransaction(true);
 			try {
-				channel = new DbService(trans).getChannel(16);
+				channel = new DbService(trans).getChannel(17);
 				trans.commit();
 			} catch (Exception ex) {
 				trans.rollback();
@@ -51,6 +50,16 @@ public class ChannelAdapter {
 			}
 			
 			ChannelAdapter.getInstance().start(channel);
+			
+			Thread.sleep(5000);
+			
+			ChannelAdapter.getInstance().stop(17);
+			
+			Thread.sleep(2000);
+			
+			for(Thread thread : findAllThreads()){
+				System.out.println(thread.getName());
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -95,6 +104,9 @@ public class ChannelAdapter {
 				Constructor<? extends Client> ctor = clazz.getConstructor(paramTypes);
 				client = ctor.newInstance(new Object[]{ channel });
 				
+				//通道信息加入缓存
+				ChannelCacheUtil.put("channel_cache", "channel_" + channel.getId(), channel);
+				
 				Thread channelThread = new Thread(new ThreadGroup("ChannelThreadGroup"), new ChannelThread(client), "ChannelThread_" + channel.getId());
 				channelThread.setDaemon(true);
 				channelThread.start();
@@ -133,43 +145,16 @@ public class ChannelAdapter {
 	 * 
 	 * @param channelId
 	 */
-	@SuppressWarnings("deprecation")
 	public void stop(int channelId) {
 		Channel channel = ChannelCacheUtil.get(Channel.class, "channel_cache", "channel_" + channelId);
 		
 		if(null != channel){
 			channel.setStatus(Channel.STOP_STATUS);
-			
-			for(Thread thread : findAllThreads()){
-				String name = thread.getName();
-				if(name.equals("ChannelThread_" + channelId)){
-					thread.interrupt();
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					thread.stop();
-					
-					break;
-				}
-			}
+			((Cmpp2_0Client)(channel.getClient())).stop();
+			ConstantUtils.updateChannelStatus(channelId, 2);
 		}
 		
 		CHANNEL_THREAD_NAME_LIST.remove("ChannelThread_" + channelId);
-		
-		DatabaseTransaction trans = new DatabaseTransaction(true);
-		try {
-			DbService dbService = new DbService(trans);
-			dbService.addChannelLog(channel.getId(), channel.getName(), "通道停止");
-			dbService.updateChannelStatus(channel.getId(), 2);
-			trans.commit();
-		} catch (Exception ex) {
-			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-			trans.rollback();
-		} finally {
-			trans.close();
-		}
 	}
 	
 	public static Thread[] findAllThreads() {

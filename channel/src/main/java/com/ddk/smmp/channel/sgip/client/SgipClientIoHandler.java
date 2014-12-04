@@ -7,7 +7,7 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 
 import com.ddk.smmp.channel.Channel;
-import com.ddk.smmp.channel.sgip.handler.SubmitResponseThread;
+import com.ddk.smmp.channel.ConstantUtils;
 import com.ddk.smmp.channel.sgip.helper.SgipConstant;
 import com.ddk.smmp.channel.sgip.msg.Bind;
 import com.ddk.smmp.channel.sgip.msg.BindResp;
@@ -15,10 +15,8 @@ import com.ddk.smmp.channel.sgip.msg.SubmitResp;
 import com.ddk.smmp.channel.sgip.msg.Unbind;
 import com.ddk.smmp.channel.sgip.msg.UnbindResp;
 import com.ddk.smmp.channel.sgip.msg.parent.SgipMSG;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
 
 /**
  * 
@@ -29,10 +27,8 @@ public class SgipClientIoHandler extends IoHandlerAdapter {
 	private static final Logger logger = Logger.getLogger(SgipClientIoHandler.class);
 	
 	private Channel channel = null;
-	SubmitResponseThread submitResponseThread;
-	public SgipClientIoHandler(Channel channel, SubmitResponseThread submitResponseThread) {
+	public SgipClientIoHandler(Channel channel) {
 		this.channel = channel;
-		this.submitResponseThread = submitResponseThread;
 	}
 	
 	@Override
@@ -84,18 +80,7 @@ public class SgipClientIoHandler extends IoHandlerAdapter {
 				session.setAttribute("isSend", true);//设置可发送标识
 				
 				//更改状态为运行
-				DatabaseTransaction trans = new DatabaseTransaction(true);
-				try {
-					DbService dbService = new DbService(trans);
-					dbService.addChannelLog(channel.getId(), channel.getName(), "启动成功");
-					dbService.updateChannelStatus(channel.getId(), 1);
-					trans.commit();
-				} catch (Exception ex) {
-					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-					trans.rollback();
-				} finally {
-					trans.close();
-				}
+				ConstantUtils.updateChannelStatus(channel.getId(), 1);
 				
 				channel.setStatus(Channel.RUN_STATUS);
 			} else {
@@ -114,7 +99,7 @@ public class SgipClientIoHandler extends IoHandlerAdapter {
 		case SgipConstant.CMD_SUBMIT_RESP:
 			SubmitResp subresponse = (SubmitResp) msg;
 			
-			submitResponseThread.queue.offer(subresponse);//将数据加入处理队列
+			((SgipClient)(channel.getClient())).submitResponseThread.queue.offer(subresponse);//将数据加入处理队列
 			
 			break;
 		default:

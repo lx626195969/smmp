@@ -7,6 +7,7 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 
 import com.ddk.smmp.channel.Channel;
+import com.ddk.smmp.channel.ConstantUtils;
 import com.ddk.smmp.channel.smgp.handler.ActiveTestThread;
 import com.ddk.smmp.channel.smgp.handler.DeliverThread;
 import com.ddk.smmp.channel.smgp.handler.SubmitResponseThread;
@@ -22,10 +23,8 @@ import com.ddk.smmp.channel.smgp.msg.Login;
 import com.ddk.smmp.channel.smgp.msg.LoginResp;
 import com.ddk.smmp.channel.smgp.msg.SubmitResp;
 import com.ddk.smmp.channel.smgp.msg.parent.SmgpMSG;
-import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.log4j.ChannelLog;
 import com.ddk.smmp.log4j.LevelUtils;
-import com.ddk.smmp.service.DbService;
 
 /**
  * 
@@ -39,11 +38,6 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 	public SmgpClientIoHandler(Channel channel) {
 		this.channel = channel;
 	}
-	
-	SubmitThread submitThread = null;
-	SubmitResponseThread submitResponseThread = null;
-	ActiveTestThread heartbeatThread = null;
-	DeliverThread deliverThread = null;
 	
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
@@ -71,8 +65,8 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 		session.write(request);
 		
 		// 启动ActiveTest链路心跳检测Thread
-		heartbeatThread = new ActiveTestThread(session, channel.getId());
-		heartbeatThread.start();
+		((SmgpClient)(channel.getClient())).heartbeatThread = new ActiveTestThread(session, channel.getId());
+		((SmgpClient)(channel.getClient())).heartbeatThread.start();
 		
 		session.resumeRead();//恢复读取
 	}
@@ -91,25 +85,32 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 		session.removeAttribute("isSend");//移除可发送标识
 				
 		//关闭线程
-		if(null != heartbeatThread){
-			heartbeatThread.stop();
-			heartbeatThread = null;
+		if(null != ((SmgpClient)(channel.getClient())).heartbeatThread){
+			((SmgpClient)(channel.getClient())).heartbeatThread.stop();
+			((SmgpClient)(channel.getClient())).heartbeatThread = null;
 			ChannelLog.log(logger, "停止心跳处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-		if(null != submitThread){
-			submitThread.stop_();
-			submitThread = null;
+		
+		if(null != ((SmgpClient)(channel.getClient())).submitThread){
+			((SmgpClient)(channel.getClient())).submitThread.stop_();
+			((SmgpClient)(channel.getClient())).submitThread = null;
 			ChannelLog.log(logger, "停止短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-		if(null != submitResponseThread){
-			submitResponseThread.stop_();
-			submitResponseThread = null;
+		
+		if(null != ((SmgpClient)(channel.getClient())).submitResponseThread){
+			((SmgpClient)(channel.getClient())).submitResponseThread.stop_();
+			((SmgpClient)(channel.getClient())).submitResponseThread = null;
 			ChannelLog.log(logger, "停止短信提交响应处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
-		if(null != deliverThread){
-			deliverThread.stop_();
-			deliverThread = null;
+		
+		if(null != ((SmgpClient)(channel.getClient())).deliverThread){
+			((SmgpClient)(channel.getClient())).deliverThread.stop_();
+			((SmgpClient)(channel.getClient())).deliverThread = null;
 			ChannelLog.log(logger, "停止短信上行和报告处理线程......", LevelUtils.getSucLevel(channel.getId()));
+		}
+		
+		if(null != channel.getClient().connector){
+			channel.getClient().connector.dispose();
 		}
 	}
 
@@ -125,39 +126,27 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 				session.setAttribute("isSend", true);//设置可发送标识
 				
 				//更改状态为运行
-				DatabaseTransaction trans = new DatabaseTransaction(true);
-				try {
-					DbService dbService = new DbService(trans);
-					dbService.addChannelLog(channel.getId(), channel.getName(), "启动成功");
-					dbService.updateChannelStatus(channel.getId(), 1);
-					trans.commit();
-				} catch (Exception ex) {
-					ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
-					
-					trans.rollback();
-				} finally {
-					trans.close();
-				}
+				ConstantUtils.updateChannelStatus(channel.getId(), 1);
 				
 				channel.setStatus(Channel.RUN_STATUS);
 				
 				//启动消息发送处理类
-				submitThread = new SubmitThread(channel);
-				submitThread.start();
+				((SmgpClient)(channel.getClient())).submitThread = new SubmitThread(channel);
+				((SmgpClient)(channel.getClient())).submitThread.start();
 				
 				//启动发送响应处理类
-				submitResponseThread = new SubmitResponseThread(channel);
-				submitResponseThread.start();
+				((SmgpClient)(channel.getClient())).submitResponseThread = new SubmitResponseThread(channel);
+				((SmgpClient)(channel.getClient())).submitResponseThread.start();
 				
 				//启动状态报告或者MT消息处理类
-				deliverThread = new DeliverThread(channel);
-				deliverThread.start();
+				((SmgpClient)(channel.getClient())).deliverThread = new DeliverThread(channel);
+				((SmgpClient)(channel.getClient())).deliverThread.start();
 			} else {
 				session.close(true);
 			}
 			break;
 		case SmgpConstant.CMD_ACTIVE_TEST_RESP:
-			heartbeatThread.setLastActiveTime(System.currentTimeMillis());//更改最后心跳时间等于当前时间
+			((SmgpClient)(channel.getClient())).heartbeatThread.setLastActiveTime(System.currentTimeMillis());//更改最后心跳时间等于当前时间
 			break;
 		case SmgpConstant.CMD_ACTIVE_TEST:
 			ActiveTest activeTest = (ActiveTest) msg;
@@ -177,7 +166,7 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 		case SmgpConstant.CMD_SUBMIT_RESP:
 			SubmitResp subresponse = (SubmitResp) msg;
 			
-			submitResponseThread.queue.offer(subresponse);//将数据加入处理队列
+			((SmgpClient)(channel.getClient())).submitResponseThread.queue.offer(subresponse);//将数据加入处理队列
 			
 			break;
 		case SmgpConstant.CMD_DELIVER:
@@ -187,7 +176,7 @@ public class SmgpClientIoHandler extends IoHandlerAdapter {
 			cmppDeliverResp.setMsgId(cmppDeliver.getMsgId());
 			session.write(cmppDeliverResp);
 			
-			deliverThread.queue.offer(cmppDeliver);//将数据加入处理队列
+			((SmgpClient)(channel.getClient())).deliverThread.queue.offer(cmppDeliver);//将数据加入处理队列
 
 			break;
 		default:

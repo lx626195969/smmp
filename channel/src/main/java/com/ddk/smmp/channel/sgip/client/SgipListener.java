@@ -73,7 +73,7 @@ public class SgipListener extends IoHandlerAdapter {
 			rThread.stop_();
 		}
 		
-		acceptor.dispose(true);
+		acceptor.dispose();
 	}
 	
 	@Override
