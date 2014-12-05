@@ -10,7 +10,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.ddk.smmp.channel.cmpp._2.client.Cmpp2_0Client;
 import com.ddk.smmp.jdbc.database.DatabaseTransaction;
 import com.ddk.smmp.jdbc.database.DruidDatabaseConnectionPool;
 import com.ddk.smmp.service.DbService;
