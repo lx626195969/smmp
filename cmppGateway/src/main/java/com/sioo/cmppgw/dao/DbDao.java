@@ -113,7 +113,7 @@ public class DbDao extends DataAccess {
 			String[] idArray = ids.split(",");
 			String[] sqlArray = new String[idArray.length];
 			for(int i = 0;i < sqlArray.length;i++){
-				sqlArray[i] = "UPDATE message_received SET is_deliv = 1 WHERE id " + idArray[i] + ";";
+				sqlArray[i] = "UPDATE message_received SET is_deliv = 1 WHERE id = " + idArray[i] + ";";
 			}
 			super.batchUpdate(sqlArray);
 		}
