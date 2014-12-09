@@ -23,6 +23,7 @@ public class MaiYuan_HttpClient extends Client {
 	public MaiYuan_HttpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	public SubmitThread submitThread = null;

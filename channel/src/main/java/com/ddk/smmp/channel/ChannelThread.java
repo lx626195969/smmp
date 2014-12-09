@@ -1,5 +1,6 @@
 package com.ddk.smmp.channel;
 
+
 /**
  * @author leeson 2014年11月27日 上午9:55:37 li_mr_ceo@163.com <br>
  * 

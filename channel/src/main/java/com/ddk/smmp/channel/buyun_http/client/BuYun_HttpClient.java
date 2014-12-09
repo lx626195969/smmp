@@ -22,6 +22,7 @@ public class BuYun_HttpClient extends Client {
 	public BuYun_HttpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	public SubmitThread submitThread = null;
@@ -40,7 +41,7 @@ public class BuYun_HttpClient extends Client {
 			}
 			
 			if(null == buYun_HttpServer){
-				buYun_HttpServer = BuYun_HttpServer.getInstance(channel);
+				buYun_HttpServer = new BuYun_HttpServer(channel);
 				ChannelLog.log(logger, "启动步云报告和上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
 				buYun_HttpServer.start();
 			}

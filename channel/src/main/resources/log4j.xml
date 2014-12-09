@@ -9,22 +9,18 @@
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="10000" />
 			<param name="levelMax" value="40000" />
-			<param name="AcceptOnMatch" value="true" />
 		</filter>
 	</appender>
 
 	<!--定义全局日志 -->
 	<appender name="all" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/all.log" />
-		<param name="Append" value="true" />
-		<param name="MaxBackupIndex" value="10" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
 		</layout>
 		<filter class="org.apache.log4j.varia.LevelRangeFilter">
 			<param name="levelMin" value="info" />
 			<param name="levelMax" value="error" />
-			<param name="AcceptOnMatch" value="true" />
 		</filter>
 	</appender>
 	

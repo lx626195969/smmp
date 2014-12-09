@@ -22,6 +22,7 @@ public class GuanYi_HttpClient extends Client {
 	public GuanYi_HttpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	public SubmitThread submitThread = null;
@@ -40,7 +41,7 @@ public class GuanYi_HttpClient extends Client {
 			}
 			
 			if(null == guanyi_HttpServer){
-				guanyi_HttpServer = GuanYi_HttpServer.getInstance(channel);
+				guanyi_HttpServer = new GuanYi_HttpServer(channel);
 				ChannelLog.log(logger, "启动冠艺报告和上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
 				guanyi_HttpServer.start();
 			}

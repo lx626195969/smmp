@@ -13,26 +13,18 @@ import com.ddk.smmp.log4j.LevelUtils;
  * 
  * @author leeson 2014年10月20日 下午4:07:15 li_mr_ceo@163.com <br>
  */
-public class BuYun_HttpServer {
+public class BuYun_HttpServer{
 	private static final Logger logger = Logger.getLogger(BuYun_HttpServer.class);
 	private Channel channel = null;
-	private static BuYun_HttpServer buYun_HttpServer = null;
 	private Server server = null;
 	
-	private BuYun_HttpServer() {
+	public BuYun_HttpServer() {
 		super();
 	}
 	
-	private BuYun_HttpServer(Channel channel) {
+	public BuYun_HttpServer(Channel channel) {
 		super();
 		this.channel = channel;
-	}
-	
-	public static BuYun_HttpServer getInstance(Channel channel){
-		if(null == buYun_HttpServer){
-			buYun_HttpServer = new BuYun_HttpServer(channel);
-		}
-		return buYun_HttpServer;
 	}
 	
 	public void start() throws Exception {

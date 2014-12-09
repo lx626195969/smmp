@@ -10,9 +10,11 @@ import org.apache.mina.core.service.IoConnector;
  */
 public abstract class Client implements Serializable {
 	private static final long serialVersionUID = 8870989980897465733L;
-	
+
 	public IoConnector connector = null;
 	public Channel channel = null;
+
 	public abstract void start();
+
 	public abstract void stop();
 }

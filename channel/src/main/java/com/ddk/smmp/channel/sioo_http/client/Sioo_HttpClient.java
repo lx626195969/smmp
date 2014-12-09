@@ -22,6 +22,7 @@ public class Sioo_HttpClient extends Client {
 	public Sioo_HttpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	public SubmitThread submitThread = null;

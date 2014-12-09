@@ -87,4 +87,9 @@ public class ChannelAciton extends ServerResource {
 		}
 		return PARAM_ERROR;
 	}
+	
+	public static void main(String[] args) {
+		Integer cid = 12;
+		ChannelAdapter.getInstance().stop(cid);
+	}
 }

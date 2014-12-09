@@ -24,6 +24,7 @@ public class LianCheng_HttpClient extends Client {
 	public LianCheng_HttpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	public SubmitThread submitThread = null;

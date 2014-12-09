@@ -21,6 +21,7 @@ public class YuZhou_HttpClient extends Client {
 	public YuZhou_HttpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	public SubmitThread submitThread = null;

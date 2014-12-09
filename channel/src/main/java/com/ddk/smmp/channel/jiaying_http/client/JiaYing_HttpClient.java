@@ -23,6 +23,7 @@ public class JiaYing_HttpClient extends Client {
 	public JiaYing_HttpClient(Channel channel) {
 		super();
 		this.channel = channel;
+		channel.setClient(this);
 	}
 	
 	public SubmitThread submitThread = null;

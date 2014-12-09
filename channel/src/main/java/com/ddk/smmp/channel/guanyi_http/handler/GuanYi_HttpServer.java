@@ -16,23 +16,15 @@ import com.ddk.smmp.log4j.LevelUtils;
 public class GuanYi_HttpServer {
 	private static final Logger logger = Logger.getLogger(GuanYi_HttpServer.class);
 	private Channel channel = null;
-	private static GuanYi_HttpServer guanYi_HttpServer = null;
 	private Server server = null;
 	
-	private GuanYi_HttpServer() {
+	public GuanYi_HttpServer() {
 		super();
 	}
 	
-	private GuanYi_HttpServer(Channel channel) {
+	public GuanYi_HttpServer(Channel channel) {
 		super();
 		this.channel = channel;
-	}
-	
-	public static GuanYi_HttpServer getInstance(Channel channel){
-		if(null == guanYi_HttpServer){
-			guanYi_HttpServer = new GuanYi_HttpServer(channel);
-		}
-		return guanYi_HttpServer;
 	}
 	
 	public void start() throws Exception {
