@@ -169,6 +169,8 @@ public class CmppServerHandler extends ChannelDuplexHandler {
         connectResp.setVersion(connect.getVersion());
         //开始校验用户名、密码
         if(authClient(connect.getSourceAddr(), connect.getTimeStamp(), connect.getAuthenticatorSource(), ctx)){
+        	logger.info("Auth Pass!");
+        	
         	ctx.channel().attr(Constants.PROTOCALTYPE_VERSION).set((int) connect.getVersion());
         	
         	connectResp.setStatus(0);
@@ -177,6 +179,8 @@ public class CmppServerHandler extends ChannelDuplexHandler {
         	logger.debug("Send ConnectRsp:{}", connectResp.toString());
             ctx.writeAndFlush(connectResp);
         }else{
+        	logger.info("Auth Fail!");
+        	
         	connectResp.setStatus(3);
         	connectResp.doEncode();
         	logger.debug("Send ConnectRsp:{}", connectResp.toString());

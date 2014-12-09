@@ -71,11 +71,21 @@ public class ConfigUtil {
 					for(UserMode um : userModes){
 						CacheUtil.put(USER_CACHE_KEY, um.getUid(), um);
 					}
-					logger.info("user cache num[" + userModes.size() + "] ......");
+					logger.info("User Cache Num[" + userModes.size() + "] ......");
 				} catch (Exception ex) {
 					trans.rollback();
 				} finally {
 					trans.close();
+				}
+				
+				logger.info("Online User:");
+				for(Object obj : CacheUtil._GetCache(USER_SESSION_KEY, true).values()){
+					ChannelHandlerContext ctx = (ChannelHandlerContext)obj;
+					@SuppressWarnings("unchecked")
+					Object uObj = ctx.channel().attr(Constants.CURRENT_USER).get();
+			    	if(null != uObj){
+			    		logger.info(((UserMode)uObj).getUid());
+			    	}
 				}
 			}
 		}, 0, 60 * 5, TimeUnit.SECONDS);
@@ -117,7 +127,7 @@ public class ConfigUtil {
 					        String state = rm.getState();
 					        int length = state.getBytes(Charsets.US_ASCII).length;
 					    	if(length > 7 ){
-					    		state = "UNKNOWN";
+					    		state = "UNDELIV";
 					    	}
 					        ByteBuffer.wrap(deliver.getStat()).put(state.getBytes(Charsets.US_ASCII));
 					        
@@ -141,15 +151,12 @@ public class ConfigUtil {
 			                logger.debug("Send Deliver Report:{}", deliver.toString());
 			                ctx.writeAndFlush(deliver);
 			                
-			                idBuffer.append(rm.getId());
-			                if(i != recordModes.size() - 1){
-			                	idBuffer.append(",");
-			                }
+			                idBuffer.append(rm.getId()).append(",");
 						}
 					}
 					
 					if(idBuffer.length() > 0){
-						dbService.delReports(idBuffer.toString());//删除已经推送报告的
+						dbService.delReports(idBuffer.substring(0, idBuffer.length() - 1));//删除已经推送报告的
 					}
 					
 					trans.commit();

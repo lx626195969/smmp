@@ -78,8 +78,9 @@ public class DbDao extends DataAccess {
 	 * @param ids
 	 */
 	public void delReports(String ids){
-		if(StringUtils.isNotEmpty(ids)){
+		if(StringUtils.isNotBlank(ids)){
 			String sql = "DELETE FROM sms_reports WHERE id IN(" + ids + ");";
+			System.out.println(sql);
 			super.update(sql);
 		}
 	}
