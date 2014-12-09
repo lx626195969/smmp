@@ -52,7 +52,7 @@ public class AddSmsTask extends TimerTask {
 						//service.batchDelQueue(channel.getId(), idStringBuffer.toString());//批量删除队列表记录
 						trans.commit();
 					} catch (Exception ex) {
-						logger.error(ex.getMessage(), ex.getCause());
+						logger.error(ex.getMessage(), ex);
 						trans.rollback();
 					} finally {
 						trans.close();
@@ -74,7 +74,7 @@ public class AddSmsTask extends TimerTask {
 						new DbService(trans).batchAddSubmitRsp(submitRspVos);
 						trans.commit();
 					} catch (Exception ex) {
-						logger.error(ex.getMessage(), ex.getCause());
+						logger.error(ex.getMessage(), ex);
 						trans.rollback();
 					} finally {
 						trans.close();
@@ -96,7 +96,7 @@ public class AddSmsTask extends TimerTask {
 						new DbService(trans).batchAddDeliv(delivVos);
 						trans.commit();
 					} catch (Exception ex) {
-						logger.error(ex.getMessage(), ex.getCause());
+						logger.error(ex.getMessage(), ex);
 						trans.rollback();
 					} finally {
 						trans.close();
@@ -118,7 +118,7 @@ public class AddSmsTask extends TimerTask {
 						new DbService(trans).batchAddMt(mtVos);
 						trans.commit();
 					} catch (Exception ex) {
-						logger.error(ex.getMessage(), ex.getCause());
+						logger.error(ex.getMessage(), ex);
 						trans.rollback();
 					} finally {
 						trans.close();

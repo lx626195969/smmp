@@ -79,12 +79,8 @@ public class DbDao extends DataAccess {
 	 */
 	public void delReports(String ids){
 		if(StringUtils.isNotEmpty(ids)){
-			String[] idArray = ids.split(",");
-			String[] sqlArray = new String[idArray.length];
-			for(int i = 0;i < sqlArray.length;i++){
-				sqlArray[i] = "DELETE FROM sms_reports WHERE id = " + idArray[i] + ";";
-			}
-			super.batchUpdate(sqlArray);
+			String sql = "DELETE FROM sms_reports WHERE id IN(" + ids + ");";
+			super.update(sql);
 		}
 	}
 	

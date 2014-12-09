@@ -53,7 +53,7 @@ public class PushReportThread extends Thread {
 					try {
 						params.put("args", URLEncoder.encode(args, "UTF-8"));
 					} catch (UnsupportedEncodingException e) {
-						logger.error(e.getMessage(), e.getCause());
+						logger.error(e.getMessage(), e);
 						continue;
 					}
 					

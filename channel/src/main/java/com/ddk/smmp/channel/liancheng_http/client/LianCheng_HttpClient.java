@@ -52,7 +52,7 @@ public class LianCheng_HttpClient extends Client {
 				ChannelLog.log(logger, "启动联诚智胜上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
 			}
 		} catch (Exception e) {
-			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 			
 			ConstantUtils.updateChannelStatus(channel.getId(), 2);
 			channel.setStatus(Channel.STOP_STATUS);

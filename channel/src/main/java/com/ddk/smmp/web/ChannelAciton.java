@@ -60,7 +60,7 @@ public class ChannelAciton extends ServerResource {
 					channel = service.getChannel(cid);
 					trans.commit();
 				} catch (Exception ex) {
-					logger.error(ex.getMessage(), ex.getCause());
+					logger.error(ex.getMessage(), ex);
 					trans.rollback();
 				} finally {
 					trans.close();
@@ -83,7 +83,7 @@ public class ChannelAciton extends ServerResource {
 				return SUCCESS;
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e.getCause());
+			logger.error(e.getMessage(), e);
 		}
 		return PARAM_ERROR;
 	}

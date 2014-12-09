@@ -45,7 +45,7 @@ public class BuYun_HttpClient extends Client {
 				buYun_HttpServer.start();
 			}
 		} catch (Exception e) {
-			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 			
 			ConstantUtils.updateChannelStatus(channel.getId(), 2);
 			channel.setStatus(Channel.STOP_STATUS);
@@ -68,7 +68,7 @@ public class BuYun_HttpClient extends Client {
 				buYun_HttpServer = null;
 				ChannelLog.log(logger, "停止步云短信提交处理线程.....", LevelUtils.getSucLevel(channel.getId()));
 			} catch (Exception e) {
-				ChannelLog.log(logger, "停止步云短信提交处理线程......" + e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+				ChannelLog.log(logger, "停止步云短信提交处理线程......" + e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 			}
 		}
 	}

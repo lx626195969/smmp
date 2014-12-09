@@ -53,7 +53,7 @@ public class DeliverChildThread extends Thread {
 					//添加报告到待处理集合
 					delivVos.add(new DelivVo(Long.parseLong(msgId), channel.getId(), state, time));
 				} catch (ParseException e) {
-					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 				}
 			}
 			//短信

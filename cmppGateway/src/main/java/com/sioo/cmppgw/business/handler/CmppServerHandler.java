@@ -59,6 +59,7 @@ import com.sioo.cmppgw.util.PostKeyUtil;
  * @author leeson 2014年8月22日 上午9:17:48 li_mr_ceo@163.com <br>
  *
  */
+@SuppressWarnings("unchecked")
 @ChannelHandler.Sharable
 public class CmppServerHandler extends ChannelDuplexHandler {
     Logger logger = LoggerFactory.getLogger(CmppServerHandler.class);
@@ -77,25 +78,30 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("" + "Cinet:【{}】 closed Connection!", ctx.channel().remoteAddress());
+    	Object obj = ctx.channel().attr(Constants.CURRENT_USER).get();
+    	if(null != obj){
+    		logger.info("Client:【{},{}】 closed Connection!", ((UserMode)obj).getUid(), ctx.channel().remoteAddress());
+    	}else{
+    		logger.info("Client:【{}】 closed Connection!", ctx.channel().remoteAddress());
+    	}
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.warn("Handler 异常!,异常信息:{},连接关闭!", cause.getMessage());
-        
-		UserMode user = (UserMode)ctx.channel().attr(Constants.CURRENT_USER).get();//获取当前用户
-		if(null != user){
-			CacheUtil.remove(USER_SESSION_KEY, user.getId());
-		}
+    	Object obj = ctx.channel().attr(Constants.CURRENT_USER).get();
+    	if(null != obj){
+    		UserMode user = (UserMode)obj;
+    		logger.info("Handler exption!, cause:【{}】connection close {}!", user.getUid(), cause.getMessage());
+    		CacheUtil.remove(USER_SESSION_KEY, user.getId());
+    	}else{
+    		logger.info("Client: closed Connection {}!", cause.getMessage());
+    	}
         ctx.close();
     }
 
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("Received Connection From:【{}】", ctx.channel().remoteAddress());
+        logger.info("Client: Received Connection From:【{}】", ctx.channel().remoteAddress());
     }
 
     @Override
@@ -123,28 +129,20 @@ public class CmppServerHandler extends ChannelDuplexHandler {
         });
     }
 
+    
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        logger.info("Client idle time too long, close clinet:【{}】", ctx.channel().remoteAddress());
+		Object obj = ctx.channel().attr(Constants.CURRENT_USER).get();
+		if (null != obj) {
+			UserMode user = (UserMode) obj;
+			logger.info("Client: Client idle time too long, 【{}】close clinet:【{}】", user.getUid(), ctx.channel().remoteAddress());
+		} else {
+			logger.info("Client: Client idle time too long, close clinet:【{}】", ctx.channel().remoteAddress());
+		}
+        
         ctx.close();
-//        /*心跳处理*/
-//        if (evt instanceof IdleStateEvent) {
-//            IdleStateEvent event = (IdleStateEvent) evt;
-//            if (event.state() == IdleState.READER_IDLE) {
-//                /*读超时*/
-//                System.out.println("READER_IDLE 读超时");
-//                ctx.disconnect();
-//            } else if (event.state() == IdleState.WRITER_IDLE) {
-//                /*写超时*/   
-//                System.out.println("WRITER_IDLE 写超时");
-//            } else if (event.state() == IdleState.ALL_IDLE) {
-//                /*总超时*/
-//                System.out.println("ALL_IDLE 总超时");
-//            }
-//        }
     }
     
-	@SuppressWarnings("unchecked")
 	@Override
 	public void close(ChannelHandlerContext ctx, ChannelPromise future) throws Exception {
 		UserMode user = (UserMode)ctx.channel().attr(Constants.CURRENT_USER).get();//获取当前用户
@@ -158,11 +156,10 @@ public class CmppServerHandler extends ChannelDuplexHandler {
         logger.debug("Received Deliver Resp:{}", deliverResp.toString());
     }
 
-    @SuppressWarnings("unchecked")
 	private void processConnect(ChannelHandlerContext ctx, Connect connect) {
         logger.debug("Received Connect:{}", connect.toString());
         if (connect.getVersion() != Constants.PROTOCALTYPE_VERSION_CMPP2 && connect.getVersion() != Constants.PROTOCALTYPE_VERSION_CMPP3) {
-            logger.info("Unknown ProtocalVersion Close Clinet:【{}】", ctx.channel().remoteAddress());
+            logger.info("Unknown ProtocalVersion Close Client:【{}】", ctx.channel().remoteAddress());
             ctx.close();
             return;
         }
@@ -200,7 +197,6 @@ public class CmppServerHandler extends ChannelDuplexHandler {
         ctx.writeAndFlush(resp);
     }
 
-    @SuppressWarnings("unchecked")
 	private void processSubmit(ChannelHandlerContext ctx, Submit submit) {
     	logger.debug("Received Submit:{}", submit.toString());
         
@@ -365,7 +361,6 @@ public class CmppServerHandler extends ChannelDuplexHandler {
      * 
      * @return
      */
-    @SuppressWarnings("unchecked")
 	private boolean authClient(byte[] srcAddr, byte[] timestamp, byte[] clientAuthSrc, ChannelHandlerContext ctx){
     	boolean state = false;
     	if(null != srcAddr && null != timestamp && null != clientAuthSrc){

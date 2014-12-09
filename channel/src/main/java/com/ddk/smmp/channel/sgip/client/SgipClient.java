@@ -62,9 +62,9 @@ public class SgipClient extends Client {
 				ChannelLog.log(logger, "启动联通短信提交响应处理线程......", LevelUtils.getSucLevel(channel.getId()));
 			}
 		} catch (IOException e) {
-			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 		} catch (Exception e) {
-			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 		}
 		
 		// create tcp/ip connector

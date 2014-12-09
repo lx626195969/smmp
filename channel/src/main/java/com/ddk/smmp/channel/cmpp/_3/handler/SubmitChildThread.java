@@ -75,7 +75,7 @@ public class SubmitChildThread extends Thread {
 				try {
 					msgBytes = queue.getContent().getBytes("UnicodeBigUnmarked");
 				} catch (UnsupportedEncodingException e) {
-					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 				}
 				
 				if(null != msgBytes){

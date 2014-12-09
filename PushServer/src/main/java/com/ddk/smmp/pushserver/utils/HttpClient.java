@@ -42,7 +42,7 @@ public class HttpClient {
 				return new String(responseBody, encode);
 			}
 		} catch (Exception e) {
-			logger.error("HTTP Get Error:" + e.getMessage() + " URL:" + url + "?" + map2Url(param, encode), e.getCause());
+			logger.error("HTTP Get Error:" + e.getMessage() + " URL:" + url + "?" + map2Url(param, encode), e);
 		}
 		return null;
 	}
@@ -80,7 +80,7 @@ public class HttpClient {
 				return response.toString();
 			}
 		} catch (Exception e) {
-			logger.error("HTTP Post Error:" + e.getMessage() + " URL:" + url, e.getCause());
+			logger.error("HTTP Post Error:" + e.getMessage() + " URL:" + url, e);
 		} finally {
 			method.releaseConnection();
 		}

@@ -51,7 +51,7 @@ public class ConstantUtils {
 			
 			trans.commit();
 		} catch (Exception ex) {
-			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channelId), ex.getCause());
+			ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channelId), ex);
 			trans.rollback();
 		} finally {
 			trans.close();

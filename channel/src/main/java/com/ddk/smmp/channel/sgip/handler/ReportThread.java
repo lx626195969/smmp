@@ -57,7 +57,7 @@ public class ReportThread extends Thread {
 					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {
-				ChannelLog.log(logger, e.getMessage(), LevelUtils.getSucLevel(channel.getId()), e.getCause());
+				ChannelLog.log(logger, e.getMessage(), LevelUtils.getSucLevel(channel.getId()), e);
 			}
 		}
 	}

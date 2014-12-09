@@ -95,8 +95,8 @@ public class ConfigUtil {
 				DatabaseTransaction trans = new DatabaseTransaction(true);
 				try {
 					StringBuffer idBuffer = new StringBuffer();
-					DbService dbService = new DbService(trans);
 					
+					DbService dbService = new DbService(trans);
 					List<RecordMode> recordModes = dbService.getReports();
 					
 					for(int i = 0; i < recordModes.size(); i++){
@@ -114,7 +114,12 @@ public class ConfigUtil {
 					        deliver.setRegisteredDelivery((byte) 1);
 					        ByteBuffer.wrap(deliver.getMsg_Id()).putInt(Integer.parseInt(rm.getMsgId().split("#")[0])).putInt(Integer.parseInt(rm.getMsgId().split("#")[1]));
 
-					        ByteBuffer.wrap(deliver.getStat()).put(rm.getState().getBytes(Charsets.US_ASCII));
+					        String state = rm.getState();
+					        int length = state.getBytes(Charsets.US_ASCII).length;
+					    	if(length > 7 ){
+					    		state = "UNKNOWN";
+					    	}
+					        ByteBuffer.wrap(deliver.getStat()).put(state.getBytes(Charsets.US_ASCII));
 					        
 					        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
 							Date receiveTime = sdf.parse(rm.getTime());
@@ -149,6 +154,7 @@ public class ConfigUtil {
 					
 					trans.commit();
 				} catch (Exception ex) {
+					logger.error(ex.getMessage(), ex);
 					trans.rollback();
 				} finally {
 					trans.close();
@@ -238,6 +244,7 @@ public class ConfigUtil {
 					
 					trans.commit();
 				} catch (Exception ex) {
+					logger.error(ex.getMessage(), ex);
 					trans.rollback();
 				} finally {
 					trans.close();

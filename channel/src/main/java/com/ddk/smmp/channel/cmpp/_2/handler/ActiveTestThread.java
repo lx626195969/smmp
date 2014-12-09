@@ -65,11 +65,11 @@ public class ActiveTestThread extends Thread {
 				try {
 					Thread.sleep(reconnectInterval);
 				} catch (InterruptedException e) {
-					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(cid), e.getCause());
+					ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(cid), e);
 				}
 			}
 		} catch (Exception e) {
-			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(cid), e.getCause());
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(cid), e);
 		}
 	}
 }

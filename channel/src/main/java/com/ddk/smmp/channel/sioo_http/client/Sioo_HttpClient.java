@@ -50,7 +50,7 @@ public class Sioo_HttpClient extends Client {
 				logger.info("启动希奥上行处理线程......");
 			}
 		} catch (Exception e) {
-			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 			
 			ConstantUtils.updateChannelStatus(channel.getId(), 2);
 			channel.setStatus(Channel.STOP_STATUS);

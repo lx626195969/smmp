@@ -45,7 +45,7 @@ public class GuanYi_HttpClient extends Client {
 				guanyi_HttpServer.start();
 			}
 		} catch (Exception e) {
-			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e.getCause());
+			ChannelLog.log(logger, e.getMessage(), LevelUtils.getErrLevel(channel.getId()), e);
 			
 			ConstantUtils.updateChannelStatus(channel.getId(), 2);
 			channel.setStatus(Channel.STOP_STATUS);

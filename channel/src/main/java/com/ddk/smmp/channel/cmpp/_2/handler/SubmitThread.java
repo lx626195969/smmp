@@ -90,7 +90,7 @@ public class SubmitThread extends Thread{
 						temp = new DbService(trans).getMsgFromQueueAndLockMsg(channel.getId(), limit);
 						trans.commit();
 					} catch (Exception ex) {
-						ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex.getCause());
+						ChannelLog.log(logger, ex.getMessage(), LevelUtils.getErrLevel(channel.getId()), ex);
 						trans.rollback();
 					} finally {
 						trans.close();
@@ -130,7 +130,7 @@ public class SubmitThread extends Thread{
 					}
 				}
 			} catch (InterruptedException e1) {
-				ChannelLog.log(logger, e1.getMessage(), LevelUtils.getErrLevel(channel.getId()), e1.getCause());
+				ChannelLog.log(logger, e1.getMessage(), LevelUtils.getErrLevel(channel.getId()), e1);
 			}
 		}
 	}
