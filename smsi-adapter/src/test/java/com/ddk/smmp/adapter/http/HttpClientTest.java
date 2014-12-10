@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 
 import org.junit.Ignore;
+import org.junit.Test;
 import org.restlet.data.Form;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
@@ -48,22 +49,22 @@ public class HttpClientTest {
 		System.out.println(response);
 	}
 	
-	@Ignore
+	@Test
     public void POST_Submit() throws IOException{
-		String[] phones = new String[]{ "15214388466", "15214388400" };
+		String[] phones = new String[]{ "13166099479"};
 		
 		String password = "qwe123!@#";
-		String content = "大家下午好，今天下午6点在小会议室开会商讨上市方案，请提前安排好工作，准时参会。";
-		Integer productId = 9;
+		String content = "大家下午好，今天下午6点在小会议室开会商讨上市方案，请提前安排好工作，准时参会。【希奥股份】";
+		Integer productId = 8;
 		String sendTime = "";
 		String expId = "";
 		
 		SubmitRequest request = new SubmitRequest(password, phones, content, expId, productId, sendTime);
 		
-        ClientResource client = new ClientResource("http://192.168.0.114:7001/submit");
+        ClientResource client = new ClientResource("http://210.5.152.50:7001/submit");
         Form form = new Form();
-        form.add("userName", "leeson");
-        form.add("body", request.toJson("OfwcAPYjoH0DIsSdFP+DRw=="));
+        form.add("userName", "106980");
+        form.add("body", request.toJson("GH1QQJsG2VJuuZXq8TsyMQ=="));
         Representation result =  client.post(form); // 调用post方法
         
         String back = result.getText();
@@ -71,7 +72,7 @@ public class HttpClientTest {
 		System.out.println(back);
 		
 		SubmitResponse response = new SubmitResponse();
-		response = response.toObj(back, "OfwcAPYjoH0DIsSdFP+DRw==");
+		response = response.toObj(back, "GH1QQJsG2VJuuZXq8TsyMQ==");
 		System.out.println(response);
     }
 	
