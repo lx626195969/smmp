@@ -42,7 +42,7 @@ public class DingYuan_HttpClient extends Client {
 			
 			if(null == dingYuan_HttpServer){
 				dingYuan_HttpServer = new DingYuan_HttpServer(channel);
-				ChannelLog.log(logger, "启动冠艺报告和上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
+				ChannelLog.log(logger, "启动鼎元智业报告和上行处理线程......", LevelUtils.getSucLevel(channel.getId()));
 				dingYuan_HttpServer.start();
 			}
 		} catch (Exception e) {
@@ -60,7 +60,7 @@ public class DingYuan_HttpClient extends Client {
 		if(null != submitThread){
 			submitThread.stop_();
 			submitThread = null;
-			ChannelLog.log(logger, "停止http短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
+			ChannelLog.log(logger, "停止鼎元智业http短信提交处理线程......", LevelUtils.getSucLevel(channel.getId()));
 		}
 		if(null != dingYuan_HttpServer){
 			try {
