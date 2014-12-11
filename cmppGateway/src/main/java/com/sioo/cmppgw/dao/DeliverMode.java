@@ -84,4 +84,11 @@ public class DeliverMode {
 		this.index = index;
 		this.totle = totle;
 	}
+
+	@Override
+	public String toString() {
+		return "DeliverMode [id=" + id + ", uid=" + uid + ", content="
+				+ content + ", phone=" + phone + ", srcId=" + srcId
+				+ ", index=" + index + ", totle=" + totle + "]";
+	}
 }

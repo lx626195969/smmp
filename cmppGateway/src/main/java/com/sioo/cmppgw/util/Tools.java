@@ -8,6 +8,7 @@ package com.sioo.cmppgw.util;
  */
 public class Tools {
 	private static int sequence_Id = 0;
+	private static long socket_Id = 0;
 	private static int SMS_NUM = 0;
 	/**
 	 * 生成序列号
@@ -37,5 +38,15 @@ public class Tools {
 		SMS_NUM ++;
 		
 		return SMS_NUM;
+	}
+	
+	public synchronized static long generateSocketID() {
+		socket_Id++;
+
+		if (socket_Id == Long.MAX_VALUE) {
+			socket_Id = 0;
+		}
+
+		return socket_Id;
 	}
 }

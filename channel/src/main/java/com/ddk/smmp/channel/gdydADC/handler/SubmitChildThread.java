@@ -1,16 +1,17 @@
-package com.ddk.smmp.channel.dingyuan_http.handler;
+package com.ddk.smmp.channel.gdydADC.handler;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
-import com.ddk.smmp.channel.gdydADC.utils.Tools;
+import com.ddk.smmp.channel.dingyuan_http.utils.Tools;
 import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
@@ -51,50 +52,46 @@ public class SubmitChildThread extends Thread {
 			
 			HttpClient httpClient = new HttpClient();
 			Map<String, String> paramMap = new HashMap<String, String>();
-			paramMap.put("username", channel.getAccount());
-			paramMap.put("password", DigestUtils.md5Hex(channel.getAccount() + DigestUtils.md5Hex(channel.getPassword())));
-			paramMap.put("mobile", queue.getPhone());
-			paramMap.put("content", queue.getContent());
+			paramMap.put("ua", channel.getAccount());
+			paramMap.put("pw", channel.getPassword());
+			paramMap.put("mb", queue.getPhone());
+			paramMap.put("ms", queue.getContent());
 			
-			ChannelLog.log(logger,
-					"send msg:username=" + paramMap.get("username")
-							+ ";password=" + paramMap.get("password")
-							+ ";mobile=" + paramMap.get("mobile") + ";content="
-							+ queue.getContent() + ";",
+			ChannelLog.log(logger, "send msg:ua=" + paramMap.get("ua") + ";pw="
+					+ paramMap.get("pw") + ";mb=" + paramMap.get("mb") + ";ms="
+					+ queue.getContent() + ";",
 					LevelUtils.getSucLevel(channel.getId()));
 
-			Object obj = httpClient.post(channel.getSubmitUrl() + "/smsSend.do", paramMap, encode);
+			Object obj = httpClient.post(channel.getSubmitUrl(), paramMap, encode);
 			
 			ChannelLog.log(logger, "recv msg:" + obj, LevelUtils.getSucLevel(channel.getId()));
 			
 			Integer seq = Tools.generateSeq();
 			Long msgId = Long.parseLong(queue.getId() + "");//默认msgId
-			String state = "MT:0";//默认成功
+			int state = 0;//默认成功
 			if(null != obj){
-				Long result = Long.parseLong(obj.toString());
-				if(result.longValue() > 0){
-					msgId = result;
+				if(obj.toString().startsWith("0")){
+					msgId = Long.parseLong(obj.toString().substring(2));
 				}else{
-					state = "MT:1:" + result;
+					state = Integer.parseInt(obj.toString());
 				}
 			}else{
-				state = "MT:1:408";//代表未给响应
+				state = 408;//代表未给响应
 			}
-			
 			submitVos.add(new SubmitVo(queue.getId(), seq, channel.getId()));
-			
+			String state_ = getState(state);
 			for(int j = 1;j <= queue.getNum(); j++){
-				if(state.startsWith("MT:1:")){
+				if(state_.startsWith("MT:1:")){
 					//系统产生对应发送数量的MR:0008的状态报告
 					Long tempMsgId = Long.parseLong(msgId.toString() + j);
-					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), tempMsgId, channel.getId(), state));
+					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), tempMsgId, channel.getId(), state_));
 					delivVos.add(new DelivVo(tempMsgId, channel.getId(), "MR:0008", DateUtils.format(new Date(), "yyyyMMddHHmmss")));
 				}else{
-					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), msgId, channel.getId(), state));
+					submitRspVos.add(new SubmitRspVo(seq, queue.getId(), msgId, channel.getId(), state_));
 				}
 			}
 			
-			if(state.equals("MT:0")){
+			if(state_.equals("MT:0")){
 				//添加数量缓存方便报告回来时 生成对应条数报告
 				MemCachedUtil.set("deliv_cache", channel.getId() + "_" + msgId, queue.getNum(), 3 * 24 * 60 * 60);
 			}
@@ -109,5 +106,36 @@ public class SubmitChildThread extends Thread {
 		if(delivVos.size() > 0){
 			SmsCache.queue3.addAll(delivVos);
 		}
+	}
+	
+	/**
+	 * 获取响应状态 对应字符串状态
+	 * 
+	 * @param result
+	 * @return
+	 */
+	private String getState(int result){
+		if(result == 0){
+			return "MT:0";
+		}else{
+			return "MT:1:" + result;
+		}
+	}
+	
+	/**
+     * 获取短信中的签名
+     * 
+     * @param content
+     * @return
+     */
+    public static String getSign(String content) {
+    	String sign = "";
+	    Pattern pattern = Pattern.compile("(?<=\\【)[^\\】]+");  
+	    Matcher matcher = pattern.matcher(content);
+	    while(matcher.find())
+	    {
+	    	sign = matcher.group();
+	    }
+	    return sign;
 	}
 }

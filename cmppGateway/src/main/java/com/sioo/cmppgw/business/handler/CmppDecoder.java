@@ -25,7 +25,7 @@ import com.sioo.cmppgw.entity.Submit;
  */
 @SuppressWarnings("rawtypes")
 public class CmppDecoder extends ReplayingDecoder {
-    Logger logger = LoggerFactory.getLogger(CmppDecoder.class);
+    Logger logger = LoggerFactory.getLogger((CmppDecoder.class).getSimpleName());
 
     @SuppressWarnings("unchecked")
 	@Override

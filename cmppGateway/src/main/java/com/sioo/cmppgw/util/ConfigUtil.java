@@ -3,6 +3,7 @@ package com.sioo.cmppgw.util;
 import static com.sioo.cmppgw.business.handler.CmppServerHandler.magIdTailCount;
 import static com.sioo.cmppgw.business.handler.CmppServerHandler.msgIdHeadFormat;
 import static com.sioo.cmppgw.business.handler.CmppServerHandler.random;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.io.File;
@@ -40,7 +41,11 @@ import com.sioo.cmppgw.service.DbService;
  *
  */
 public class ConfigUtil {
-	private final static Logger logger = LoggerFactory.getLogger(ConfigUtil.class);
+	private final static Logger logger = LoggerFactory.getLogger((ConfigUtil.class).getSimpleName());
+	
+	public static void main(String[] args) {
+		logger.info((ConfigUtil.class).getSimpleName());
+	}
 	
 	public static final String USER_CACHE_KEY = "user_cache_key";
 	public static final String USER_SESSION_KEY = "user_session_key";
@@ -56,6 +61,7 @@ public class ConfigUtil {
 		cache.put(name.trim(), value.trim());
 	}
 
+	@SuppressWarnings("unchecked")
 	public void loadConf() {
 		/**=======初始化连接池=====*/
 		DruidDatabaseConnectionPool.startup();
@@ -77,18 +83,30 @@ public class ConfigUtil {
 				} finally {
 					trans.close();
 				}
-				
-				logger.info("Online User:");
-				for(Object obj : CacheUtil._GetCache(USER_SESSION_KEY, true).values()){
-					ChannelHandlerContext ctx = (ChannelHandlerContext)obj;
-					@SuppressWarnings("unchecked")
-					Object uObj = ctx.channel().attr(Constants.CURRENT_USER).get();
-			    	if(null != uObj){
-			    		logger.info(((UserMode)uObj).getUid());
-			    	}
-				}
 			}
 		}, 0, 60 * 5, TimeUnit.SECONDS);
+		
+		/**=======监听用户是否掉线=====*/
+		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				logger.info("[Online User:]");
+				Long currentTime = System.currentTimeMillis();
+				for(Object obj : CacheUtil._GetCache(USER_SESSION_KEY, true).values()){
+					ChannelHandlerContext ctx = (ChannelHandlerContext)obj;
+					UserMode uObj = (UserMode)ctx.channel().attr(Constants.CURRENT_USER).get();
+					Long tObj = (Long)ctx.channel().attr(Constants.LAST_TIME).get();
+		    		Channel channel = ctx.channel();
+		    		Long cha = currentTime - tObj;
+		    		logger.info(uObj.getUid() + " > isActive:" + channel.isActive() + " isOpen:" + channel.isOpen() + " isRegistered:" + channel.isRegistered() + " isWritable:" + channel.isWritable() + " lastTime:" + cha + " milliseconds before");
+		    		if(cha > 60 * 1000){
+		    			logger.info("Client idle time out, close the ctx");
+		    			CacheUtil.remove(USER_SESSION_KEY, uObj.getId());
+		    			ctx.close();
+		    		}
+				}
+			}
+		}, 0, 60, TimeUnit.SECONDS);
 		
 		/**=======定时清理长短信缓存=====*/
 		new ScheduledThreadPoolExecutor(1).scheduleAtFixedRate(new Runnable() {
@@ -149,6 +167,7 @@ public class ConfigUtil {
 					        ByteBuffer.wrap(deliver.getDestTerminalId()).put(rm.getPhone().getBytes());
 			                deliver.doEncode();
 			                logger.debug("Send Deliver Report:{}", deliver.toString());
+			                logger.info("Send Deliver Report:{}", rm.toString());
 			                ctx.writeAndFlush(deliver);
 			                
 			                idBuffer.append(rm.getId()).append(",");
@@ -223,7 +242,8 @@ public class ConfigUtil {
 					        		deliver.setTpUdhi((byte)0);
 						        	deliver.setMsgContent(dm.getContent().getBytes("UnicodeBigUnmarked"));
 					                deliver.doEncode();
-					                logger.debug("Send Deliver MSG:{}", deliver.toString());
+					                logger.debug("Send Deliver MO:{}", deliver.toString());
+					                logger.info("Send Deliver MO:{}", dm.toString());
 					                ctx.writeAndFlush(deliver);
 					        	}
 					        }else{
@@ -237,7 +257,8 @@ public class ConfigUtil {
 					        	
 					        	deliver.setMsgContent(byteMeger(contents));
 				                deliver.doEncode();
-				                logger.debug("Send Deliver MSG:{}", deliver.toString());
+				                logger.debug("Send Deliver MO:{}", deliver.toString());
+				                logger.info("Send Deliver MO:{}", dm.toString());
 				                ctx.writeAndFlush(deliver);
 					        }
 			                

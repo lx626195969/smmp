@@ -23,7 +23,7 @@ public abstract class DataAccess {
 	/**
 	 * 日志工具
 	 */
-	private static final Logger LOG = LoggerFactory.getLogger(DataAccess.class);
+	private static final Logger LOG = LoggerFactory.getLogger((DataAccess.class).getSimpleName());
 	/**
 	 * 数据库连接
 	 */

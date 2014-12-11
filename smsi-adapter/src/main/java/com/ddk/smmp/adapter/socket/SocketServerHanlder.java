@@ -25,6 +25,7 @@ import com.ddk.smmp.adapter.socket.entity.helper.ProductBalance;
 import com.ddk.smmp.adapter.submit_socket_client.SmsTransferClient;
 import com.ddk.smmp.adapter.utils.CacheUtil;
 import com.ddk.smmp.adapter.utils.Constants;
+import com.ddk.smmp.adapter.utils.Tuple2;
 import com.ddk.smmp.adapter.web.SmsiServer;
 import com.ddk.smmp.util.Base64;
 import com.ddk.smmp.util.MemCachedUtil;
@@ -35,7 +36,7 @@ import com.ddk.smmp.util.PostKeyUtil;
  * 
  */
 public class SocketServerHanlder extends IoHandlerAdapter {
-	private static final Logger logger = LoggerFactory.getLogger(SocketServerHanlder.class);
+	private static final Logger logger = LoggerFactory.getLogger((SocketServerHanlder.class).getSimpleName());
 	public static final String CURRENT_USER = "currentUser";
 	
 	@Override
@@ -120,7 +121,7 @@ public class SocketServerHanlder extends IoHandlerAdapter {
 						CacheUtil.put("SOCKET_USER_STATE", userMode2.getId(), true);
 						JSONObject result = null;
 						try {
-							result = submit(submitRequest, userMode2.getId());
+							result = submit(submitRequest, userMode2);
 						} catch (Exception e) {
 							
 						}finally{
@@ -262,7 +263,7 @@ public class SocketServerHanlder extends IoHandlerAdapter {
 	 * @param uId
 	 * @return
 	 */
-	private JSONObject submit(SubmitRequest request, int uId){
+	private JSONObject submit(SubmitRequest request, UserMode user){
 		JSONObject json = new JSONObject();
 		
 		String[] phoneArray = request.getPhones();
@@ -276,7 +277,7 @@ public class SocketServerHanlder extends IoHandlerAdapter {
 		json.put("phones", phones);
 		json.put("contents", request.getContent());
 		json.put("productid", request.getProductId());
-		json.put("userid", uId);
+		json.put("userid", user.getId());
 		json.put("expid", request.getExpId());
 		json.put("timing_date", request.getSendTime());
 		
@@ -285,11 +286,13 @@ public class SocketServerHanlder extends IoHandlerAdapter {
 		json.put("key", PostKeyUtil.generateKey(seed));
 		
 		SmsTransferClient client = new SmsTransferClient(CacheUtil.get(String.class, "SUBMIT_INFO", "submit.hostname"), CacheUtil.get(Integer.class, "SUBMIT_INFO", "submit.port"));
-		Object result = client.submit(json.toJSONString());
+		Tuple2<String, Long> result = client.submit(json.toJSONString(), user.getUserName());
 		client.close();
 		
-		if(null != result){
-			JSONObject res = JSONObject.parseObject(result.toString());
+		logger.info("R <- " + result.e1 + "[SID:" + result.e2 + "]");
+		
+		if(null != result.e1){
+			JSONObject res = JSONObject.parseObject(result.e1);
 			
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("result", StringUtils.isEmpty(res.getString("resultEN")) ? "" : res.getString("resultEN"));

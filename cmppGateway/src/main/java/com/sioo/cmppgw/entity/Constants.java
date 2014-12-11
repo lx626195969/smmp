@@ -14,4 +14,6 @@ public class Constants {
 	public static AttributeKey PROTOCALTYPE_VERSION = new AttributeKey("protocalType");
 	@SuppressWarnings("rawtypes")
 	public static AttributeKey CURRENT_USER = new AttributeKey("currentUser");
+	@SuppressWarnings("rawtypes")
+	public static AttributeKey LAST_TIME = new AttributeKey("lastTime");
 }

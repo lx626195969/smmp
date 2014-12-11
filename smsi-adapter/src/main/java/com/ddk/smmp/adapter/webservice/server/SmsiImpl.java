@@ -18,6 +18,7 @@ import com.ddk.smmp.adapter.service.DbService;
 import com.ddk.smmp.adapter.submit_socket_client.SmsTransferClient;
 import com.ddk.smmp.adapter.utils.CacheUtil;
 import com.ddk.smmp.adapter.utils.Constants;
+import com.ddk.smmp.adapter.utils.Tuple2;
 import com.ddk.smmp.adapter.web.SmsiServer;
 import com.ddk.smmp.adapter.webservice.entity.BalanceRequest;
 import com.ddk.smmp.adapter.webservice.entity.BalanceResponse;
@@ -64,7 +65,7 @@ public class SmsiImpl implements Smsi {
 								CacheUtil.put("WEBSERVICE_USER_STATE", userMode.getId(), true);
 								JSONObject result = null;
 								try {
-									result = submit(submitRequest, userMode.getId());
+									result = submit(submitRequest, userMode);
 								} catch (Exception e) {
 									
 								}finally{
@@ -226,7 +227,7 @@ public class SmsiImpl implements Smsi {
 	 * @param uId
 	 * @return
 	 */
-	private JSONObject submit(SubmitRequest request, int uId){
+	private JSONObject submit(SubmitRequest request, UserMode user){
 		JSONObject json = new JSONObject();
 		
 		String[] phoneArray = request.getPhones();
@@ -240,7 +241,7 @@ public class SmsiImpl implements Smsi {
 		json.put("phones", phones);
 		json.put("contents", request.getContent());
 		json.put("productid", request.getProductId());
-		json.put("userid", uId);
+		json.put("userid", user.getId());
 		json.put("expid", request.getExpId());
 		json.put("timing_date", request.getSendTime());
 		
@@ -249,11 +250,13 @@ public class SmsiImpl implements Smsi {
 		json.put("key", PostKeyUtil.generateKey(seed));
 		
 		SmsTransferClient client = new SmsTransferClient(CacheUtil.get(String.class, "SUBMIT_INFO", "submit.hostname"), CacheUtil.get(Integer.class, "SUBMIT_INFO", "submit.port"));
-		Object result = client.submit(json.toJSONString());
+		Tuple2<String, Long> result = client.submit(json.toJSONString(), user.getUserName());
 		client.close();
 		
-		if(null != result){
-			JSONObject res = JSONObject.parseObject(result.toString());
+		LOG.info("R <- " + result.e1 + "[SID:" + result.e2 + "]");
+		
+		if(null != result.e1){
+			JSONObject res = JSONObject.parseObject(result.e1);
 			
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("result", StringUtils.isEmpty(res.getString("resultEN")) ? "" : res.getString("resultEN"));

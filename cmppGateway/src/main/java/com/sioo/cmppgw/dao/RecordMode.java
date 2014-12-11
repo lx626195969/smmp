@@ -107,8 +107,6 @@ public class RecordMode {
 		this.phone = phone;
 		this.srcId = srcId;
 	}
-	
-	
 
 	public RecordMode(int id, int uid, String msgId, String state, String time, String phone, String srcId) {
 		super();
@@ -123,5 +121,13 @@ public class RecordMode {
 
 	public RecordMode() {
 		super();
+	}
+
+	@Override
+	public String toString() {
+		return "RecordMode [uid=" + uid + ", rid=" + rid + ", msgId=" + msgId
+				+ ", sort=" + sort + ", totle=" + totle + ", phone=" + phone
+				+ ", srcId=" + srcId + ", id=" + id + ", time=" + time
+				+ ", state=" + state + "]";
 	}
 }

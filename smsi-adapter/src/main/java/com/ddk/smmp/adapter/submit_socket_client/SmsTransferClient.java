@@ -13,12 +13,15 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ddk.smmp.adapter.utils.Tools;
+import com.ddk.smmp.adapter.utils.Tuple2;
+
 /**
  * @author leeson 2014年9月10日 下午4:12:50 li_mr_ceo@163.com <br>
  * 
  */
 public class SmsTransferClient {
-	private final Logger logger = (Logger) LoggerFactory.getLogger(getClass());
+	private final Logger logger = (Logger) LoggerFactory.getLogger((getClass()).getSimpleName());
 	private String hostname = "127.0.0.1";
 	private int port = 10002;
 	private IoConnector connector = null;
@@ -53,24 +56,25 @@ public class SmsTransferClient {
 		return getIoConnector().connect(new InetSocketAddress(hostname, port));
 	}
 	
-	public Object submit(String message){
+	public Tuple2<String, Long> submit(String message, String uName){
 		IoSession session;
+		Long socketID = Tools.generateSocketID();
 		try {
 			ConnectFuture future = getConnectFuture();
 			future.awaitUninterruptibly();
 			session = future.getSession();
 			
-			logger.info("S -> " + message);
+			logger.info("[UID:" + uName + "]S -> " + message + "[SID:" + socketID + "]");
 			
 			session.write(message);
 			session.getCloseFuture().awaitUninterruptibly();
 			
-			return session.getAttribute("result");
+			return new Tuple2<String, Long>(session.getAttribute("result") + "", socketID);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
         
-		return null;
+		return Tuple2.nil();
 	}
 	
 	public void close(){

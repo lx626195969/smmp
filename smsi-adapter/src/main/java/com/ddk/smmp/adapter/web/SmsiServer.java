@@ -31,7 +31,7 @@ public class SmsiServer {
 		PropertyConfigurator.configure(Class.class.getClass().getResource("/").getPath() + "log4j.properties");
 	}
 	
-	private static final Logger logger = Logger.getLogger(SmsiServer.class);
+	private static final Logger logger = Logger.getLogger((SmsiServer.class).getSimpleName());
 	
 	public static void main(String[] args) throws Exception {
 		SmsiServer smsiServer = new SmsiServer();

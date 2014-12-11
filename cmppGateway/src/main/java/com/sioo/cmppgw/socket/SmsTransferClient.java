@@ -1,6 +1,5 @@
 package com.sioo.cmppgw.socket;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
@@ -14,15 +13,15 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSONObject;
-import com.sioo.cmppgw.util.PostKeyUtil;
+import com.sioo.cmppgw.util.Tools;
+import com.sioo.cmppgw.util.Tuple2;
 
 /**
  * @author leeson 2014年9月10日 下午4:12:50 li_mr_ceo@163.com <br>
  * 
  */
 public class SmsTransferClient {
-	private final Logger logger = (Logger) LoggerFactory.getLogger(getClass());
+	private final Logger logger = (Logger) LoggerFactory.getLogger((getClass()).getSimpleName());
 	private String hostname = "127.0.0.1";
 	private int port = 10002;
 	private IoConnector connector = null;
@@ -56,28 +55,25 @@ public class SmsTransferClient {
 		return getIoConnector().connect(new InetSocketAddress(hostname, port));
 	}
 	
-	public Object submit(String message){
+	public Tuple2<String, Long> submit(String message, String uName){
 		IoSession session;
+		Long socketID = Tools.generateSocketID();
 		try {
 			ConnectFuture future = getConnectFuture();
 			future.awaitUninterruptibly();
 			session = future.getSession();
 			
-			logger.info("S -> " + message);
+			logger.info("[UID:" + uName + "]S -> " + message + "[SID:" + socketID + "]");
 			
 			session.write(message);
-			long sTime = System.currentTimeMillis();
 			session.getCloseFuture().awaitUninterruptibly();
-			long eTime = System.currentTimeMillis();
 			
-			logger.debug("time consuming:" + (eTime - sTime));
-			
-			return session.getAttribute("result");
+			return new Tuple2<String, Long>(session.getAttribute("result") + "", socketID);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
         
-		return null;
+		return Tuple2.nil();
 	}
 	
 	public void close(){
@@ -85,36 +81,4 @@ public class SmsTransferClient {
 			connector.dispose(true);
 		}
 	}
-
-	public static void main(String[] args) throws IOException,InterruptedException {
-		for(int i = 0; i < 1; i++){
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					for(int i = 2000; i < 2500; i++){
-						final int x = i;
-						
-						String phone = "1521638" + x;
-						SmsTransferClient client = new SmsTransferClient("127.0.0.1", 10002);
-						
-						JSONObject json = new JSONObject();
-						json.put("phones", phone);
-						json.put("contents", "你好世界" + x);
-						json.put("productid", 15);
-						json.put("userid", 30);
-						json.put("expid", "");
-						json.put("sign", "希奥");
-						json.put("timing_date", "");
-						
-						long seed = System.currentTimeMillis();
-						json.put("seed", seed);
-						json.put("key", PostKeyUtil.generateKey(seed));
-						
-				        System.out.println("result=" + client.submit(json.toJSONString()));
-						client.close();
-					}
-				}
-			}).start();
-		}
-    }
 }

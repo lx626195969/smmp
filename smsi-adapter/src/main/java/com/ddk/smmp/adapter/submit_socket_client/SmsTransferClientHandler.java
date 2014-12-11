@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SmsTransferClientHandler extends IoHandlerAdapter {
-	private final Logger logger = (Logger) LoggerFactory.getLogger(getClass());
+	private final Logger logger = (Logger) LoggerFactory.getLogger((getClass()).getSimpleName());
 
 	@Override
 	public void sessionOpened(IoSession session) {
@@ -19,7 +19,7 @@ public class SmsTransferClientHandler extends IoHandlerAdapter {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) {
-		logger.info("R <- " + message);
+		//logger.info("R <- " + message);
 		session.setAttribute("result", message.toString());
 		session.close(true);
 	}

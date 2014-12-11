@@ -26,7 +26,7 @@ import com.ddk.smmp.util.Base64;
  * 
  */
 public class DeliverAciton extends BaseAction {
-	private static final Logger logger = LoggerFactory.getLogger(DeliverAciton.class);
+	private static final Logger logger = LoggerFactory.getLogger((DeliverAciton.class).getSimpleName());
 	
 	@SuppressWarnings("rawtypes")
 	@Get

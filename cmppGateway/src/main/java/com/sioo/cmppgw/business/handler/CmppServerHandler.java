@@ -21,8 +21,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -53,6 +51,7 @@ import com.sioo.cmppgw.util.FlowControl;
 import com.sioo.cmppgw.util.LongSM;
 import com.sioo.cmppgw.util.LongSMCache;
 import com.sioo.cmppgw.util.PostKeyUtil;
+import com.sioo.cmppgw.util.Tuple2;
 
 /**
  * 
@@ -62,7 +61,7 @@ import com.sioo.cmppgw.util.PostKeyUtil;
 @SuppressWarnings("unchecked")
 @ChannelHandler.Sharable
 public class CmppServerHandler extends ChannelDuplexHandler {
-    Logger logger = LoggerFactory.getLogger(CmppServerHandler.class);
+    Logger logger = LoggerFactory.getLogger((CmppServerHandler.class).getSimpleName());
     
     public static Random random = new Random();
     public static DateFormat msgIdHeadFormat = new SimpleDateFormat("yyyyMMdd");
@@ -122,7 +121,7 @@ public class CmppServerHandler extends ChannelDuplexHandler {
                         processConnect(ctx, (Connect) cmppMsg);
                         break;
                     case CMPPConstant.APP_DELIVER_RESP:
-                        processDeliverResp((DeliverResp) cmppMsg);
+                        processDeliverResp(ctx, (DeliverResp) cmppMsg);
                         break;
                 }
             }
@@ -152,8 +151,10 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 		super.close(ctx, future);
 	}
 
-    private void processDeliverResp(DeliverResp deliverResp) {
+    private void processDeliverResp(ChannelHandlerContext ctx, DeliverResp deliverResp) {
         logger.debug("Received Deliver Resp:{}", deliverResp.toString());
+        
+        ctx.channel().attr(Constants.LAST_TIME).set(System.currentTimeMillis());//设置最后请求时间
     }
 
 	private void processConnect(ChannelHandlerContext ctx, Connect connect) {
@@ -193,6 +194,8 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 	private void processActiveTest(ChannelHandlerContext ctx, ActiveTest activeTest) {
         logger.debug("Received heartbeats From:【{}】", ctx.channel().remoteAddress());
         
+        ctx.channel().attr(Constants.LAST_TIME).set(System.currentTimeMillis());
+        
         ActiveTestResp resp = new ActiveTestResp();
         resp.setReserved((byte) 0);
         resp.setSecquenceId(activeTest.getSecquenceId());
@@ -204,6 +207,8 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 	private void processSubmit(ChannelHandlerContext ctx, Submit submit) {
     	logger.debug("Received Submit:{}", submit.toString());
         
+    	ctx.channel().attr(Constants.LAST_TIME).set(System.currentTimeMillis());//设置最后请求时间
+    	
         UserMode user = (UserMode)ctx.channel().attr(Constants.CURRENT_USER).get();//获取当前用户
         
         SubmitResp resp = new SubmitResp((Integer) ctx.channel().attr(Constants.PROTOCALTYPE_VERSION).get());
@@ -390,9 +395,10 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 							
 							ChannelHandlerContext oldCtx = CacheUtil.get(ChannelHandlerContext.class, USER_SESSION_KEY, userMode.getId());
 							if(null != oldCtx){
-								logger.debug("WARN:user {} too many connect!", userMode.getUid());
+								logger.info("WARN:user {} too many connect!", userMode.getUid());
 							}else{
 								ctx.channel().attr(Constants.CURRENT_USER).set(userMode);
+								ctx.channel().attr(Constants.LAST_TIME).set(System.currentTimeMillis());
 								state = true;
 
 								// 将用户Session加入缓存
@@ -419,15 +425,11 @@ public class CmppServerHandler extends ChannelDuplexHandler {
      */
 	private JSONObject submit(UserMode user, String phone, String content, String expId){
 		JSONObject json = new JSONObject();
-		
-		String sign = getSign(content);// 获取签名
-		
 		json.put("phones", phone);
-		json.put("contents", content.replace("【" + sign + "】", ""));
+		json.put("contents", content);
 		json.put("productid", user.getProductId());
 		json.put("userid", user.getId());
 		json.put("expid", expId);
-		json.put("sign", sign);
 		json.put("timing_date", "");
 		
 		long seed = System.currentTimeMillis();
@@ -435,14 +437,14 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 		json.put("key", PostKeyUtil.generateKey(seed));
 		
 		SmsTransferClient client = new SmsTransferClient(ConfigUtil.getConfig("submit.hostname"), Integer.parseInt(ConfigUtil.getConfig("submit.port")));
-		Object result = client.submit(json.toJSONString());
+		Tuple2<String, Long> result = client.submit(json.toJSONString(), user.getUid());
 		client.close();
 		
-		logger.debug("submit result:" + result);
+		logger.info("R <- " + result.e1 + "[SID:" + result.e2 + "]");
 		
 		JSONObject jsonObject = new JSONObject();
-		if(null != result){
-			JSONObject res = JSONObject.parseObject(result.toString());
+		if(null != result.e1){
+			JSONObject res = JSONObject.parseObject(result.e1);
 			
 			jsonObject.put("code", null == res.getInteger("code") ? -1 : res.getInteger("code"));
 			jsonObject.put("rid", res.getInteger("rid"));
@@ -451,22 +453,5 @@ public class CmppServerHandler extends ChannelDuplexHandler {
 			jsonObject.put("code",  -1);
 			return jsonObject;
 		}
-	}
-	
-    /**
-     * 获取短信中的签名
-     * 
-     * @param content
-     * @return
-     */
-    public static String getSign(String content) {
-    	String sign = "";
-	    Pattern pattern = Pattern.compile("(?<=\\【)[^\\】]+");
-	    Matcher matcher = pattern.matcher(content);
-	    while(matcher.find())
-	    {
-	    	sign = matcher.group();
-	    }
-	    return sign;
 	}
 }

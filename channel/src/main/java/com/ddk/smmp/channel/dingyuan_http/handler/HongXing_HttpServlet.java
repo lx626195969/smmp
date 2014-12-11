@@ -28,19 +28,19 @@ import com.ddk.smmp.utils.MemCachedUtil;
  * @author leeson 2014年10月27日 上午9:29:53 li_mr_ceo@163.com <br>
  * 
  */
-public class DingYuan_HttpServlet extends HttpServlet {
+public class HongXing_HttpServlet extends HttpServlet {
 	private static final long serialVersionUID = 1004028325830573310L;
 	
-	private static final Logger logger = Logger.getLogger(DingYuan_HttpServlet.class);
+	private static final Logger logger = Logger.getLogger(HongXing_HttpServlet.class);
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 	private Channel channel = null;
 	
-	public DingYuan_HttpServlet(Channel channel) {
+	public HongXing_HttpServlet(Channel channel) {
 		super();
 		this.channel = channel;
 	}
 	
-	public DingYuan_HttpServlet() {
+	public HongXing_HttpServlet() {
 		super();
 	}
 

@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class Statistic {
-    private final static Logger logger = LoggerFactory.getLogger(Statistic.class);
+    private final static Logger logger = LoggerFactory.getLogger((Statistic.class).getSimpleName());
 
     private static AtomicInteger submitCount = new AtomicInteger(0);
     private static AtomicInteger deliverCount = new AtomicInteger(0);

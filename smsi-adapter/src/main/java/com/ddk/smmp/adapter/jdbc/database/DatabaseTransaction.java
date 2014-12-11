@@ -15,7 +15,7 @@ public class DatabaseTransaction {
 	/**
 	 * 日志工具
 	 */
-	private static final Logger LOG = LoggerFactory.getLogger(DatabaseTransaction.class);
+	private static final Logger LOG = LoggerFactory.getLogger((DatabaseTransaction.class).getSimpleName());
 
 	/**
 	 * 数据库连接

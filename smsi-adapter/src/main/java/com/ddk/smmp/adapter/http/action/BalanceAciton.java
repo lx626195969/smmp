@@ -27,7 +27,7 @@ import com.ddk.smmp.util.Base64;
  *
  */
 public class BalanceAciton extends BaseAction {
-	private static final Logger logger = LoggerFactory.getLogger(BalanceAciton.class);
+	private static final Logger logger = LoggerFactory.getLogger((BalanceAciton.class).getSimpleName());
 	
 	@SuppressWarnings("rawtypes")
 	@Get

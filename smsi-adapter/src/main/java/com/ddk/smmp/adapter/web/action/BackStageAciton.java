@@ -18,7 +18,7 @@ import com.ddk.smmp.adapter.webservice.server.WebServiceServer;
  * 
  */
 public class BackStageAciton extends ServerResource {
-	private static final Logger logger = LoggerFactory.getLogger(BackStageAciton.class);
+	private static final Logger logger = LoggerFactory.getLogger((BackStageAciton.class).getSimpleName());
 	
 	/** 参数错误 */
 	private final String PARAM_ERROR = "Param Error";

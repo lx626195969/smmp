@@ -4,7 +4,7 @@
 <log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
 	<appender name="Console" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="10000" />
@@ -16,7 +16,7 @@
 	<appender name="all" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/all.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="org.apache.log4j.varia.LevelRangeFilter">
 			<param name="levelMin" value="info" />
@@ -27,7 +27,7 @@
 	<appender name="moni" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/moni.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11009" />
@@ -37,7 +37,7 @@
 	<appender name="moniErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/moni_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12009" />
@@ -47,7 +47,7 @@
 	<appender name="guanyi" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/guanyi.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11007" />
@@ -57,7 +57,7 @@
 	<appender name="guanyiErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/guanyi_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12007" />
@@ -67,7 +67,7 @@
 	<appender name="maiyuan" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/maiyuan.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11008" />
@@ -77,7 +77,7 @@
 	<appender name="maiyuanErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/maiyuan_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12008" />
@@ -87,7 +87,7 @@
 	<appender name="jiaying" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/jiaying.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11010" />
@@ -97,7 +97,7 @@
 	<appender name="jiayingErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/jiaying_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12010" />
@@ -107,7 +107,7 @@
 	<appender name="yuzhou" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/yuzhou.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11011" />
@@ -117,7 +117,7 @@
 	<appender name="yuzhouErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/yuzhou_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12011" />
@@ -127,7 +127,7 @@
 	<appender name="yuzhoucmpp" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/yuzhoucmpp.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11012" />
@@ -137,7 +137,7 @@
 	<appender name="yuzhoucmppErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/yuzhoucmpp_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12012" />
@@ -148,7 +148,7 @@
 	<appender name="zhejiang" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/zhejiang.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11013" />
@@ -158,7 +158,7 @@
 	<appender name="zhejiangErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/zhejiang_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12013" />
@@ -169,7 +169,7 @@
 	<appender name="liancheng" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/liancheng.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11014" />
@@ -179,7 +179,7 @@
 	<appender name="lianchengErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/liancheng_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12014" />
@@ -190,7 +190,7 @@
 	<appender name="guangdongSGIP" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/guangdongSGIP.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11015" />
@@ -200,7 +200,7 @@
 	<appender name="guangdongSGIPErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/guangdongSGIP_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12015" />
@@ -211,7 +211,7 @@
 	<appender name="buyun" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/buyun.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11016" />
@@ -221,7 +221,7 @@
 	<appender name="buyunErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/buyun_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12016" />
@@ -232,7 +232,7 @@
 	<appender name="dingyuan" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/dingyuan.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="11018" />
@@ -242,7 +242,8 @@
 	<appender name="dingyuanErr" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="./logs/dingyuan_err.log" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} [%-5p] %c - %m%n" />
+												   
+			<param name="ConversionPattern" value="%d{MM-dd HH:mm:ss} %-5level %logger{36}:%L - %msg%n" />
 		</layout>
 		<filter class="com.ddk.smmp.log4j.ChannelLogFilter">
 			<param name="levelMin" value="12018" />

@@ -20,7 +20,7 @@ import com.alibaba.druid.pool.DruidDataSourceFactory;
  * 
  */
 public final class DruidDatabaseConnectionPool {
-	private static final Logger LOG = LoggerFactory.getLogger(DruidDatabaseConnectionPool.class);
+	private static final Logger LOG = LoggerFactory.getLogger((DruidDatabaseConnectionPool.class).getSimpleName());
 	
 	private static DruidDataSource _dds = null;
 	private static String confile = "druid.properties";

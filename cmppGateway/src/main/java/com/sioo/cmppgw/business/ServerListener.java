@@ -25,7 +25,7 @@ import com.sioo.cmppgw.util.ConfigUtil;
  *
  */
 public class ServerListener {
-    Logger logger = LoggerFactory.getLogger(ServerListener.class);
+    Logger logger = LoggerFactory.getLogger((ServerListener.class).getSimpleName());
     
     private ConfigUtil configUtil;
     private ChannelHandler channelHandler;

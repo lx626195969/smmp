@@ -28,7 +28,7 @@ import com.ddk.smmp.util.PostKeyUtil;
  * 
  */
 public class SubmitAciton extends BaseAction {
-	private static final Logger logger = LoggerFactory.getLogger(SubmitAciton.class);
+	private static final Logger logger = LoggerFactory.getLogger((SubmitAciton.class).getSimpleName());
 	
 	@SuppressWarnings("rawtypes")
 	@Get
@@ -54,7 +54,7 @@ public class SubmitAciton extends BaseAction {
 					CacheUtil.put("HTTP_USER_STATE", tuple2.e1.getId(), true);
 					JSONObject json = null;
 					try {
-						json = submit(request, tuple2.e1.getId());
+						json = submit(request, tuple2.e1);
 					} catch (Exception e) {
 						
 					}finally{
@@ -116,7 +116,7 @@ public class SubmitAciton extends BaseAction {
 					CacheUtil.put("HTTP_USER_STATE", tuple2.e1.getId(), true);
 					JSONObject json = null;
 					try {
-						json = submit(request, tuple2.e1.getId());
+						json = submit(request, tuple2.e1);
 					} catch (Exception e) {
 						
 					}finally{
@@ -153,7 +153,7 @@ public class SubmitAciton extends BaseAction {
 		return null;
 	}
 	
-	private JSONObject submit(SubmitRequest request, int uId){
+	private JSONObject submit(SubmitRequest request, UserMode user){
 		JSONObject json = new JSONObject();
 		
 		String[] phoneArray = request.getPhones();
@@ -167,7 +167,7 @@ public class SubmitAciton extends BaseAction {
 		json.put("phones", phones.toString());
 		json.put("contents", request.getContent());
 		json.put("productid", request.getProductId());
-		json.put("userid", uId);
+		json.put("userid", user.getId());
 		json.put("expid", request.getExpId());
 		json.put("timing_date", request.getSendTime());
 		
@@ -176,10 +176,13 @@ public class SubmitAciton extends BaseAction {
 		json.put("key", PostKeyUtil.generateKey(seed));
 		
 		SmsTransferClient client = new SmsTransferClient(CacheUtil.get(String.class, "SUBMIT_INFO", "submit.hostname"), CacheUtil.get(Integer.class, "SUBMIT_INFO", "submit.port"));
-		Object result = client.submit(json.toJSONString());
+		Tuple2<String, Long> result = client.submit(json.toJSONString(), user.getUserName());
 		client.close();
-		if(null != result){
-			JSONObject res = JSONObject.parseObject(result.toString());
+		
+		logger.info("R <- " + result.e1 + "[SID:" + result.e2 + "]");
+		
+		if(null != result.e1){
+			JSONObject res = JSONObject.parseObject(result.e1);
 			
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("result", StringUtils.isEmpty(res.getString("resultEN")) ? "" : res.getString("resultEN"));

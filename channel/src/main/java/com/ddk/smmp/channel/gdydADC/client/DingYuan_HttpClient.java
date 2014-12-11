@@ -1,4 +1,4 @@
-package com.ddk.smmp.channel.dingyuan_http.client;
+package com.ddk.smmp.channel.gdydADC.client;
 
 import org.apache.log4j.Logger;
 
