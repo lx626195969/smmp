@@ -44,8 +44,6 @@ public class SubmitChildBatchThread extends Thread {
 	public void run() {
 		String encode = "utf-8";
 
-		StringBuffer idStringBuffer = new StringBuffer();
-
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
 		List<DelivVo> delivVos = new LinkedList<DelivVo>();
@@ -56,13 +54,8 @@ public class SubmitChildBatchThread extends Thread {
 
 		for (int i = 0; i < queueList.size(); i++) {
 			SmQueue queue = queueList.get(i);
-
-			// 拼接队列ID串 用于后面批量删除队列
-			idStringBuffer.append(queue.getId());
 			mobile += queue.getPhone();
-
 			if (i != queueList.size() - 1) {
-				idStringBuffer.append(",");
 				mobile += ",";
 			}
 		}

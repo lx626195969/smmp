@@ -59,4 +59,9 @@ public class SubmitRspVo {
 		this.channelId = channelId;
 		this.state = state;
 	}
+
+	@Override
+	public String toString() {
+		return "SubmitRspVo [seq=" + seq + ", rid=" + rid + ", msgId=" + msgId + ", channelId=" + channelId + ", state=" + state + "]";
+	}
 }

@@ -43,8 +43,6 @@ public class SubmitChildThread extends Thread {
 	public void run() {
 		String encode = "utf-8";
 		
-		StringBuffer idStringBuffer = new StringBuffer();
-		
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
 		List<DelivVo> delivVos = new LinkedList<DelivVo>();
@@ -78,12 +76,6 @@ public class SubmitChildThread extends Thread {
 			SubmitRsp submitRsp = null;
 			if(null != obj){
 				submitRsp = JaxbUtils.converyToJavaBean(obj.toString(), SubmitRsp.class);
-			}
-			
-			//拼接队列ID串 用于后面批量删除队列
-			idStringBuffer.append(queue.getId());
-			if(i != queueList.size() - 1){
-				idStringBuffer.append(",");
 			}
 			
 			ChannelLog.log(logger, "recv msg:" + submitRsp, LevelUtils.getSucLevel(channel.getId()));

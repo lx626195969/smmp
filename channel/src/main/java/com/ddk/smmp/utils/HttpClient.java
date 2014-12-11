@@ -70,11 +70,13 @@ public class HttpClient {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(method.getResponseBodyAsStream(), Charset.forName(encode)));
 				String line;
 				while ((line = reader.readLine()) != null) {
-					response.append(line + "\r\n");
+					response.append(line + "\n");
 				}
 				reader.close();
 				
-				return response.toString();
+				if(response.length() > 0){
+					return response.substring(0, response.length() - 1);
+				}
 			}
 		} catch (Exception e) {
 			System.out.println("HTTP Post Error:" + e.getMessage() + " URL:" + url);

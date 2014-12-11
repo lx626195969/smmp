@@ -31,7 +31,7 @@ public class ChannelLog {
 	 *            日志级别Int和log4j.xml中的对应上
 	 */
 	public static void log(Logger logger, Object objLogInfo, int levelInt) {
-		logger.log(new ChannelLogLevel(levelInt, "SMS", SyslogAppender.LOG_LOCAL0), objLogInfo.toString() + "\r\n");
+		logger.log(new ChannelLogLevel(levelInt, "SMS", SyslogAppender.LOG_LOCAL0), objLogInfo.toString() + "\n");
 	}
 	
 	/**
@@ -44,6 +44,6 @@ public class ChannelLog {
 	 *            日志级别Int和log4j.xml中的对应上
 	 */
 	public static void log(Logger logger, Object objLogInfo, int levelInt, Throwable throwable) {
-		logger.log(new ChannelLogLevel(levelInt, "SMS", SyslogAppender.LOG_LOCAL0), objLogInfo.toString() + "\r\n", throwable);
+		logger.log(new ChannelLogLevel(levelInt, "SMS", SyslogAppender.LOG_LOCAL0), objLogInfo.toString() + "\n", throwable);
 	}
 }

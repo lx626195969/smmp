@@ -49,4 +49,9 @@ public class DelivVo {
 		this.state = state;
 		this.time = time;
 	}
+
+	@Override
+	public String toString() {
+		return "DelivVo [msgId=" + msgId + ", channelId=" + channelId + ", state=" + state + ", time=" + time + "]";
+	}
 }

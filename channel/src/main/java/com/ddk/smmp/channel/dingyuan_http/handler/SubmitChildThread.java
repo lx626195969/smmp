@@ -1,7 +1,5 @@
 package com.ddk.smmp.channel.dingyuan_http.handler;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -13,7 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import com.ddk.smmp.channel.Channel;
-import com.ddk.smmp.channel.guanyi_http.utils.Tools;
+import com.ddk.smmp.channel.dingyuan_http.utils.Tools;
 import com.ddk.smmp.dao.DelivVo;
 import com.ddk.smmp.dao.SubmitRspVo;
 import com.ddk.smmp.dao.SubmitVo;
@@ -45,8 +43,6 @@ public class SubmitChildThread extends Thread {
 	public void run() {
 		String encode = "GBK";
 		
-		StringBuffer idStringBuffer = new StringBuffer();
-		
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		List<SubmitRspVo> submitRspVos = new LinkedList<SubmitRspVo>();
 		List<DelivVo> delivVos = new LinkedList<DelivVo>();
@@ -59,11 +55,7 @@ public class SubmitChildThread extends Thread {
 			paramMap.put("ua", channel.getAccount());
 			paramMap.put("pw", channel.getPassword());
 			paramMap.put("mb", queue.getPhone());
-			try {
-				paramMap.put("ms", URLEncoder.encode(queue.getContent(), encode));
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
+			paramMap.put("ms", queue.getContent());
 			
 			ChannelLog.log(logger, "send msg:ua=" + paramMap.get("ua") + ";pw="
 					+ paramMap.get("pw") + ";mb=" + paramMap.get("mb") + ";ms="
@@ -71,12 +63,6 @@ public class SubmitChildThread extends Thread {
 					LevelUtils.getSucLevel(channel.getId()));
 
 			Object obj = httpClient.post(channel.getSubmitUrl(), paramMap, encode);
-			
-			//拼接队列ID串 用于后面批量删除队列
-			idStringBuffer.append(queue.getId());
-			if(i != queueList.size() - 1){
-				idStringBuffer.append(",");
-			}
 			
 			ChannelLog.log(logger, "recv msg:" + obj, LevelUtils.getSucLevel(channel.getId()));
 			

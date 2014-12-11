@@ -56,8 +56,8 @@ public class DingYuan_HttpServlet extends HttpServlet {
 
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html;charset=utf-8");
-		response.setCharacterEncoding("utf-8");
+		response.setContentType("text/html;charset=GBK");
+		response.setCharacterEncoding("GBK");
 		
 		PrintWriter out = response.getWriter();
 		
@@ -92,7 +92,7 @@ public class DingYuan_HttpServlet extends HttpServlet {
 					out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
 			        out.println("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
 			        out.println("<head>");
-			        out.println("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />");
+			        out.println("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=GBK\" />");
 			        out.println("<title>Tips</title>");
 			        out.println("<body>");
 			        out.println("<h1>parameter is error</h1>");
@@ -106,10 +106,18 @@ public class DingYuan_HttpServlet extends HttpServlet {
 				String mb = request.getParameter("mb");
 				
 				if(StringUtils.isNotEmpty(ms) && StringUtils.isNotEmpty(mb) && StringUtils.isNotEmpty(sc)){
-					String time = sdf.format(new Date());
-					String msg = URLDecoder.decode(ms, "GBK");
+					String srcMsg = "";
+					for(String one : request.getQueryString().split("&")){
+						String[] twos = one.split("=");
+						if(twos[0].equalsIgnoreCase("ms")){
+							srcMsg = twos[1];
+							break;
+						}
+					}
+					
+					String msg = URLDecoder.decode(srcMsg, "GBK");
 					MtVo mtVo = new MtVo(2, channel.getId(), mb, msg, channel.getAccount() + "#" + sc);
-					ChannelLog.log(logger, "receive deliver:phone=" + mb + ";expid=" + sc + ";content=" + msg + ";time=" + time + ";", LevelUtils.getSucLevel(channel.getId()));
+					ChannelLog.log(logger, "receive deliver:phone=" + mb + ";expid=" + sc + ";content=" + msg + ";", LevelUtils.getSucLevel(channel.getId()));
 					SmsCache.queue4.add(mtVo);
 					
 					out.println("0");
@@ -129,7 +137,7 @@ public class DingYuan_HttpServlet extends HttpServlet {
 	        out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
 	        out.println("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
 	        out.println("<head>");
-	        out.println("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />");
+	        out.println("<meta http-equiv=\"Content-Type\" content=\"text/html;charset=GBK\" />");
 	        out.println("<title>Tips</title>");
 	        out.println("<body>");
 	        out.println("<h1>not support uri [" + uri + "]</h1>");

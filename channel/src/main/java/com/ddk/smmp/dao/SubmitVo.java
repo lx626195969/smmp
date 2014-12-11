@@ -39,4 +39,9 @@ public class SubmitVo {
 		this.seq = seq;
 		this.channelId = channelId;
 	}
+
+	@Override
+	public String toString() {
+		return "SubmitVo [rid=" + rid + ", seq=" + seq + ", channelId=" + channelId + "]";
+	}
 }

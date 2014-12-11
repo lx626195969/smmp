@@ -98,4 +98,9 @@ public class MtVo {
 		this.content = content;
 		this.port = port;
 	}
+
+	@Override
+	public String toString() {
+		return "MtVo [type=" + type + ", channelId=" + channelId + ", port=" + port + ", spType=" + spType + ", phone=" + phone + ", content=" + content + ", index=" + index + ", totle=" + totle + "]";
+	}
 }

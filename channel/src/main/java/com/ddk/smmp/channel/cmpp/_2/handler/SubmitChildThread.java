@@ -37,17 +37,10 @@ public class SubmitChildThread extends Thread {
 	public void run() {
 		long s = System.currentTimeMillis();
 		
-		StringBuffer idStringBuffer = new StringBuffer();
 		List<SubmitVo> submitVos = new LinkedList<SubmitVo>();
 		
 		for(int i = 0; i < queueList.size(); i++){
 			SmQueue queue = queueList.get(i);
-			
-			//拼接队列ID串 用于后面批量删除队列
-			idStringBuffer.append(queue.getId());
-			if(i != queueList.size() - 1){
-				idStringBuffer.append(",");
-			}
 			
 			Submit submit = new Submit();
 			submit.setMsgId(0l);
